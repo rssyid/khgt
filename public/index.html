@@ -98,6 +98,10 @@
             <button id="aiBtn" class="px-4 py-2 bg-[#03a9f4] hover:bg-[#01579b] text-white rounded font-bold transition flex items-center gap-2 shadow">
                 🔍 Generate Sirah (AI)
             </button>
+            <button id="cekSumberBtn" class="px-4 py-2 bg-[#065f46] hover:bg-[#064e3b] text-white rounded font-bold transition flex items-center gap-2 shadow hidden">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                Cek Sumber
+            </button>
             <button id="copyBtn" class="px-5 py-2 bg-[#2c2677] hover:bg-[#1a164c] text-white rounded font-bold transition flex items-center gap-2 shadow">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
                 Copy Image
@@ -256,19 +260,26 @@
             }
         });
 
+        // Variabel global untuk menyimpan URL sumber terakhir
+        let currentSumberUrl = null;
+        
+        // Fitur AI Generate Sirah
         // Fitur AI Generate Sirah
         document.getElementById('aiBtn').addEventListener('click', async () => {
             const btn = document.getElementById('aiBtn');
+            const cekSumberBtn = document.getElementById('cekSumberBtn');
             
-            // 🛡️ Penjagaan: Jika tombol sudah mati/proses berjalan, abaikan klik berikutnya
             if (btn.disabled) return;
         
             const overlay = document.getElementById('aiLoadingOverlay');
             
-            // Matikan tombol & tampilkan loading
             overlay.classList.remove('hidden');
             btn.disabled = true;
-            btn.classList.add('opacity-50', 'cursor-not-allowed'); // Efek visual tombol redup
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // Sembunyikan tombol cek sumber saat proses baru berjalan
+            cekSumberBtn.classList.add('hidden');
+            currentSumberUrl = null;
         
             const bulan = document.getElementById('uiBulanHijri').innerText;
             const tanggal = document.getElementById('uiTglHijri').innerText;
@@ -285,14 +296,28 @@
                 document.getElementById('uiSirahKonten').innerHTML = `<p>${data.kontent}</p>`;
                 document.getElementById('uiSirahSumber').innerText = `(${data.sumber})`;
                 
+                // Simpan dan tampilkan tombol Cek Sumber jika URL valid
+                if (data.url_sumber && data.url_sumber.trim() !== "" && data.url_sumber.startsWith("http")) {
+                    currentSumberUrl = data.url_sumber;
+                    cekSumberBtn.classList.remove('hidden');
+                } else {
+                    cekSumberBtn.classList.add('hidden');
+                }
+                
             } catch (error) {
                 console.error("AI Error:", error);
                 alert("Gagal memuat Sirah AI. Penyebab: " + error.message); 
             } finally {
-                // Nyalakan kembali tombol & sembunyikan loading
                 overlay.classList.add('hidden');
                 btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed'); // Kembalikan tampilan tombol normal
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        });
+        
+        // Handler tombol Cek Sumber
+        document.getElementById('cekSumberBtn').addEventListener('click', () => {
+            if (currentSumberUrl) {
+                window.open(currentSumberUrl, '_blank', 'noopener,noreferrer');
             }
         });
 
