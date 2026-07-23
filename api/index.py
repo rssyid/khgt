@@ -52,7 +52,7 @@ Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini ta
 }}"""
 
     # URL kita sesuaikan dengan format cURL Anda
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent"
     
     # 🌟 KUNCI PERBAIKAN: API Key dimasukkan lewat Headers (persis seperti -H di cURL)
     headers = {
