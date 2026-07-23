@@ -146,6 +146,18 @@ def get_record_for_date(iso_date: str):
                     return rec
         except Exception:
             continue
+
+    dt = datetime.strptime(iso_date, "%Y-%m-%d")
+    hijri_guess = dt.year - 579
+    for hy in [hijri_guess - 1, hijri_guess, hijri_guess + 1]:
+        try:
+            payload = fetch_calendar_year(hy, "hijriah")
+            for raw in flatten_calendar_payload(payload):
+                rec = normalize_record(raw)
+                if rec and rec["gregorian_date_iso"] == iso_date:
+                    return rec
+        except Exception:
+            continue
     return None
 
 
