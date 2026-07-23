@@ -243,16 +243,15 @@
 
 
         // Fitur AI Generate Sirah Nabawiyah
+        // Fitur AI Generate Sirah Nabawiyah dengan Overlay
         document.getElementById('aiBtn').addEventListener('click', async () => {
+            const overlay = document.getElementById('aiLoadingOverlay');
             const btn = document.getElementById('aiBtn');
-            const originalText = btn.innerHTML;
             
-            // Ubah status tombol saat loading
-            btn.innerHTML = '⏳ Memikirkan...';
+            // 1. Tampilkan Overlay Loading & Nonaktifkan tombol
+            overlay.classList.remove('hidden');
             btn.disabled = true;
-            btn.classList.add('opacity-70', 'cursor-not-allowed');
         
-            // Ambil data bulan dan tanggal dari layar
             const bulan = document.getElementById('uiBulanHijri').innerText;
             const tanggal = document.getElementById('uiTglHijri').innerText;
         
@@ -266,18 +265,18 @@
                 
                 const data = await response.json();
                 
+                // 2. Masukkan hasil ke kanvas gambar
                 document.getElementById('uiSirahJudul').innerText = data.Judul;
                 document.getElementById('uiSirahKonten').innerHTML = `<p class="mb-2">${data.kontent}</p>`;
                 document.getElementById('uiSirahSumber').innerText = `(${data.sumber})`;
                 
             } catch (error) {
                 console.error("AI Error:", error);
-                // Alert sekarang menampilkan error spesifik dari backend
                 alert("Gagal memuat Sirah AI. Penyebab: " + error.message); 
             } finally {
-                btn.innerHTML = originalText;
+                // 3. Sembunyikan kembali overlay & aktifkan tombol
+                overlay.classList.add('hidden');
                 btn.disabled = false;
-                btn.classList.remove('opacity-70', 'cursor-not-allowed');
             }
         });
                 
