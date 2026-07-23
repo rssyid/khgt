@@ -2,7 +2,8 @@ import os
 import sqlite3
 import json
 import traceback
-import google.generativeai as genai
+import urllib.request
+import urllib.error
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -35,15 +36,11 @@ def get_by_gregorian(date_iso: str):
         raise HTTPException(status_code=404, detail="Data tanggal tidak ditemukan")
     return dict(row)
 
-
 @app.get("/api/sirah")
 def get_sirah_ai(bulan: str, tanggal: str):
-    # 1. Cek ketersediaan API Key
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY belum disetel di Vercel Environment Variables")
-    
-    genai.configure(api_key=api_key)
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY belum disetel di Vercel")
 
     prompt = f"""Carikan satu peristiwa penting dari Sirah Nabawiyah yang terjadi di bulan {bulan} (untuk dikaitkan dengan tanggal {tanggal}). 
 
@@ -54,44 +51,53 @@ Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini ta
   "sumber": "Nama Kitab Rujukan"
 }}"""
 
+    # URL API Resmi Google Gemini 1.5 Flash
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    headers = {'Content-Type': 'application/json'}
+    
+    # Payload Request
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": 0.4}
+    }
+
     try:
-        # 2. Gunakan model flash dan paksakan output sebagai plain text JSON
-        model = genai.GenerativeModel('gemini-pro')
+        # Mengirim request HTTP secara langsung
+        req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers, method='POST')
+        with urllib.request.urlopen(req) as response:
+            result = json.loads(response.read().decode('utf-8'))
+            
+        # Mengekstrak teks balasan dari AI
+        text_response = result['candidates'][0]['content']['parts'][0]['text'].strip()
         
-        # Generation config agar output lebih stabil
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                temperature=0.4,
-            )
-        )
-        
-        text_response = response.text.strip()
-        
-        # 3. Pembersihan format markdown yang lebih agresif
+        # Membersihkan format Markdown JSON (```json ... ```)
         if text_response.startswith("```json"):
-            text_response = text_response.replace("```json", "", 1)
-        if text_response.startswith("```"):
-            text_response = text_response.replace("```", "", 1)
+            text_response = text_response[7:]
+        elif text_response.startswith("```"):
+            text_response = text_response[3:]
+            
         if text_response.endswith("```"):
-            # Hapus dari belakang (reverse replace)
-            text_response = text_response[::-1].replace("```", "", 1)[::-1]
+            text_response = text_response[:-3]
             
         text_response = text_response.strip()
         
-        # 4. Coba parsing JSON
+        # Parse text menjadi JSON asli
         parsed_json = json.loads(text_response)
         
-        # Validasi struktur wajib
+        # Validasi struktur
         if "Judul" not in parsed_json or "kontent" not in parsed_json or "sumber" not in parsed_json:
-             raise ValueError("Format JSON dari AI tidak memiliki atribut Judul, kontent, atau sumber")
+             raise ValueError("Format JSON tidak memiliki key Judul/kontent/sumber")
 
         return parsed_json
 
-    except json.JSONDecodeError as e:
-        print("Raw AI response:", response.text)
-        raise HTTPException(status_code=500, detail=f"Gagal mem-parsing output AI sebagai JSON: {str(e)}")
+    except urllib.error.HTTPError as e:
+        # Menangkap error dari server Google
+        error_msg = e.read().decode('utf-8')
+        print("Google API Error:", error_msg)
+        raise HTTPException(status_code=500, detail=f"Akses Gemini API Ditolak/Gagal (Cek API Key Anda)")
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Gemini mengembalikan format yang bukan JSON")
     except Exception as e:
         error_trace = traceback.format_exc()
-        print(error_trace) # Log untuk dilihat di dashboard Vercel
+        print(error_trace)
         raise HTTPException(status_code=500, detail=str(e))
