@@ -56,6 +56,17 @@
             font-family: 'Amiri', serif;
         }
 
+        /* Efek latar belakang putih transparan untuk teks Sirah */
+        .sirah-card {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 92%;
+        }
+
         [contenteditable="true"]:hover {
             background-color: rgba(0,0,0,0.03);
             border-radius: 6px;
@@ -119,33 +130,40 @@
             </div>
         </div>
 
-        <div class="relative z-10 flex-grow flex flex-col items-center text-center mt-3 px-2">
+        <!-- Bagian Sirah Nabawiyah dengan Jarak (Spacing) Lebih Turun & Background Transparan -->
+        <div class="relative z-10 flex-grow flex flex-col items-center text-center mt-8 px-2 justify-start">
             
-            <!-- Label Kategori -->
-            <div class="mb-2">
-                <span class="bg-[#065f46]/10 text-[#065f46] px-3 py-1 rounded-full text-xs sm:text-sm font-bold tracking-widest uppercase">
-                    Sirah Nabawiyah
-                </span>
+            <!-- Card Transparan untuk seluruh teks Sirah agar bersih dari watermark -->
+            <div class="sirah-card flex flex-col items-center">
+                
+                <!-- Label Kategori -->
+                <div class="mb-2">
+                    <span class="bg-[#065f46]/10 text-[#065f46] px-3 py-0.5 rounded-full text-xs sm:text-sm font-bold tracking-widest uppercase">
+                        Sirah Nabawiyah
+                    </span>
+                </div>
+
+                <!-- Judul Peristiwa -->
+                <div class="mb-2">
+                    <h4 id="uiSirahJudul" contenteditable="true" class="sirah-title-font text-[#1e293b] text-xl sm:text-2xl md:text-3xl font-bold leading-tight">
+                        Ekspedisi Sariyyah Qutbah bin Amir
+                    </h4>
+                </div>
+
+                <!-- Isi Konten Teks -->
+                <div id="uiSirahKonten" contenteditable="true" class="text-[#334155] text-sm sm:text-base md:text-lg leading-relaxed font-normal">
+                    <p>Pada bulan Safar tahun 9 Hijriah, Rasulullah SAW mengutus Qutbah bin Amir membawa 20 prajurit menuju daerah Khats'am. Meski menghadapi musuh dalam jumlah besar, pasukan Muslimin berhasil meraih kemenangan dan membawa ghanimah kembali ke Madinah.</p>
+                </div>
+                
+                <!-- Sumber / Kitab Rujukan -->
+                <div class="mt-3 pt-2 border-t border-gray-200/60 w-full">
+                    <p id="uiSirahSumber" contenteditable="true" class="text-[#b45309] text-xs sm:text-sm md:text-base font-medium italic">
+                        (Ar-Rahiq Al-Maktum, Syaikh Safiyurrahman Al-Mubarakfuri)
+                    </p>
+                </div>
+
             </div>
 
-            <!-- Judul Peristiwa -->
-            <div class="mb-2.5">
-                <h4 id="uiSirahJudul" contenteditable="true" class="sirah-title-font text-[#1e293b] text-xl sm:text-2xl md:text-3xl font-bold leading-tight">
-                    Ekspedisi Sariyyah Qutbah bin Amir
-                </h4>
-            </div>
-
-            <!-- Isi Konten Teks (Font lebih rapi dan terbaca jelas) -->
-            <div id="uiSirahKonten" contenteditable="true" class="text-[#334155] text-sm sm:text-base md:text-lg leading-relaxed font-normal max-w-[92%]">
-                <p>Pada bulan Safar tahun 9 Hijriah, Rasulullah SAW mengutus Qutbah bin Amir membawa 20 prajurit menuju daerah Khats'am. Meski menghadapi musuh dalam jumlah besar, pasukan Muslimin berhasil meraih kemenangan dan membawa ghanimah kembali ke Madinah.</p>
-            </div>
-            
-            <!-- Sumber / Kitab Rujukan -->
-            <div class="mt-auto pt-2">
-                <p id="uiSirahSumber" contenteditable="true" class="text-[#b45309] text-xs sm:text-sm md:text-base font-medium italic">
-                    (Ar-Rahiq Al-Maktum, Syaikh Safiyurrahman Al-Mubarakfuri)
-                </p>
-            </div>
         </div>
     </div>
 
