@@ -52,8 +52,7 @@ Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini ta
 }}"""
 
     # URL API Resmi Google Gemini 1.5 Flash
-    # Menggunakan suffix "-latest" atau versi "gemini-pro" standar fallback
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
     headers = {'Content-Type': 'application/json'}
     
     # Payload Request
