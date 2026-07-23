@@ -71,6 +71,9 @@
             <input type="date" id="datePicker" class="px-4 py-2 border rounded font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2c2677]">
             <button id="nextBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-semibold text-gray-700 transition">Next &rarr;</button>
         </div>
+        <button id="aiBtn" class="px-4 py-2 bg-[#db2777] hover:bg-[#be185d] text-white rounded font-bold transition flex items-center gap-2">
+            ✨ Generate Sirah (AI)
+        </button>
         <button id="copyBtn" class="px-6 py-2 bg-[#2c2677] hover:bg-[#1a164c] text-white rounded font-bold transition flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
             Copy Image
@@ -114,18 +117,18 @@
                 <h3 contenteditable="true" class="text-[#db2777] text-base sm:text-lg md:text-xl font-semibold tracking-widest uppercase mb-1">
                     Sirah Nabawiyah
                 </h3>
-                <h4 contenteditable="true" class="text-[#c026d3] text-xl sm:text-2xl md:text-3xl font-medium leading-tight">
-                    Judul Materi / Event (Klik untuk edit)
+                <h4 id="uiSirahJudul" contenteditable="true" class="text-[#c026d3] text-xl sm:text-2xl md:text-3xl font-medium leading-tight">
+                    PERANG KHAIBAR : Seberapa Kuatkah Khaibar
                 </h4>
             </div>
 
-            <div contenteditable="true" class="text-[#2c2677] text-lg sm:text-xl md:text-2xl leading-snug sm:leading-normal font-normal max-w-[95%]">
-                <p class="mb-2">Teks ini bisa Anda klik lalu edit secara manual layaknya mengetik di Microsoft Word. Hapus teks ini dan ketik materi harian di sini.</p>
+            <div id="uiSirahKonten" contenteditable="true" class="text-[#2c2677] text-lg sm:text-xl md:text-2xl leading-snug sm:leading-normal font-normal max-w-[95%]">
+                <p class="mb-2">Permukiman Yahudi Khaibar terdiri dari 2 kelompok benteng-benteng yang kokoh...</p>
             </div>
             
             <div class="mt-auto pt-3">
-                <p contenteditable="true" class="text-[#db2777] text-sm sm:text-base md:text-lg italic">
-                    (Sumber Data / Penulis)
+                <p id="uiSirahSumber" contenteditable="true" class="text-[#db2777] text-sm sm:text-base md:text-lg italic">
+                    (Sirah Nabawiyah, Al Mubarak duri)
                 </p>
             </div>
         </div>
@@ -237,6 +240,47 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadDateData(currentDate);
         });
+
+
+        // Fitur AI Generate Sirah Nabawiyah
+        document.getElementById('aiBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('aiBtn');
+            const originalText = btn.innerHTML;
+            
+            // Ubah status tombol saat loading
+            btn.innerHTML = '⏳ Memikirkan...';
+            btn.disabled = true;
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+        
+            // Ambil data bulan dan tanggal dari layar
+            const bulan = document.getElementById('uiBulanHijri').innerText;
+            const tanggal = document.getElementById('uiTglHijri').innerText;
+        
+            try {
+                const response = await fetch(`/api/sirah?bulan=${bulan}&tanggal=${tanggal}`);
+                
+                // Jika gagal, langsung lempar error agar ditangkap oleh catch
+                if (!response.ok) throw new Error("API Gagal");
+                
+                const data = await response.json();
+                
+                // Tulis hasil AI ke dalam kanvas gambar
+                document.getElementById('uiSirahJudul').innerText = data.Judul;
+                document.getElementById('uiSirahKonten').innerHTML = `<p class="mb-2">${data.kontent}</p>`;
+                document.getElementById('uiSirahSumber').innerText = `(${data.sumber})`;
+                
+            } catch (error) {
+                console.error("AI Error:", error);
+                alert("Gagal memuat Sirah dari AI. Teks akan dipertahankan pada teks sebelumnya.");
+                // Teks tidak diubah sama sekali (fallback ke default/teks terakhir)
+            } finally {
+                // Kembalikan status tombol
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-70', 'cursor-not-allowed');
+            }
+        });
+                
     </script>
 </body>
 </html>
