@@ -56,7 +56,7 @@ Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini ta
 
     try:
         # 2. Gunakan model flash dan paksakan output sebagai plain text JSON
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-pro')
         
         # Generation config agar output lebih stabil
         response = model.generate_content(
