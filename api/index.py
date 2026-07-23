@@ -47,7 +47,7 @@ def get_sirah_ai(bulan: str, tanggal: str):
 Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini tanpa tambahan teks apapun di luar JSON:
 {{
   "Judul": "Judul Peristiwa",
-  "kontent": "Penjelasan inti maksimal 65 kata.",
+  "kontent": "Penjelasan inti maksimal 75 kata.",
   "sumber": "Nama Kitab Rujukan"
 }}"""
 
