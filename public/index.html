@@ -6,11 +6,13 @@
     <title>Kalender Hijriah Global Tunggal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Tambahan Font Editorial untuk Judul Sirah -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
     <!-- Library untuk mengambil screenshot area HTML -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #f3f4f6;
             display: flex;
             flex-direction: column;
@@ -30,7 +32,7 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-            padding: 2.5rem 3rem;
+            padding: 2.2rem 3rem;
         }
 
         .watermark {
@@ -39,27 +41,32 @@
             transform: translateY(-50%);
             left: -10%;
             width: 70%;
-            opacity: 0.10;
+            opacity: 0.08;
             height: auto;
             z-index: 0;
             pointer-events: none;
             object-fit: contain;
         }
 
-        .title-text { font-size: clamp(1.25rem, 3.5vw, 2.25rem); line-height: 1.1; }
-        .day-text { font-size: clamp(2.5rem, 6vw, 4.5rem); letter-spacing: -0.02em; }
-        
-        /* Highlight saat teks bisa diedit */
+        .title-text { font-size: clamp(1.15rem, 3.2vw, 2rem); line-height: 1.15; letter-spacing: -0.01em; }
+        .day-text { font-size: clamp(2.3rem, 5.5vw, 4rem); letter-spacing: -0.03em; }
+
+        /* Font khusus untuk Judul Sirah agar berkesan literatur Islami */
+        .sirah-title-font {
+            font-family: 'Amiri', serif;
+        }
+
         [contenteditable="true"]:hover {
-            background-color: rgba(0,0,0,0.05);
-            border-radius: 4px;
+            background-color: rgba(0,0,0,0.03);
+            border-radius: 6px;
             cursor: text;
         }
         [contenteditable="true"]:focus {
-            outline: 2px dashed #db2777;
-            background-color: rgba(0,0,0,0.02);
-            border-radius: 4px;
+            outline: 2px dashed #065f46;
+            background-color: rgba(0,0,0,0.01);
+            border-radius: 6px;
         }
+        
     </style>
 </head>
 <body>
@@ -112,23 +119,31 @@
             </div>
         </div>
 
-        <div class="relative z-10 flex-grow flex flex-col items-center text-center mt-5 px-2">
-            <div class="mb-3">
-                <h3 contenteditable="true" class="text-[#db2777] text-base sm:text-lg md:text-xl font-semibold tracking-widest uppercase mb-1">
+        <div class="relative z-10 flex-grow flex flex-col items-center text-center mt-3 px-2">
+            
+            <!-- Label Kategori -->
+            <div class="mb-2">
+                <span class="bg-[#065f46]/10 text-[#065f46] px-3 py-1 rounded-full text-xs sm:text-sm font-bold tracking-widest uppercase">
                     Sirah Nabawiyah
-                </h3>
-                <h4 id="uiSirahJudul" contenteditable="true" class="text-[#c026d3] text-xl sm:text-2xl md:text-3xl font-medium leading-tight">
-                    PERANG KHAIBAR : Seberapa Kuatkah Khaibar
+                </span>
+            </div>
+
+            <!-- Judul Peristiwa -->
+            <div class="mb-2.5">
+                <h4 id="uiSirahJudul" contenteditable="true" class="sirah-title-font text-[#1e293b] text-xl sm:text-2xl md:text-3xl font-bold leading-tight">
+                    Ekspedisi Sariyyah Qutbah bin Amir
                 </h4>
             </div>
 
-            <div id="uiSirahKonten" contenteditable="true" class="text-[#2c2677] text-lg sm:text-xl md:text-2xl leading-snug sm:leading-normal font-normal max-w-[95%]">
-                <p class="mb-2">Permukiman Yahudi Khaibar terdiri dari 2 kelompok benteng-benteng yang kokoh...</p>
+            <!-- Isi Konten Teks (Font lebih rapi dan terbaca jelas) -->
+            <div id="uiSirahKonten" contenteditable="true" class="text-[#334155] text-sm sm:text-base md:text-lg leading-relaxed font-normal max-w-[92%]">
+                <p>Pada bulan Safar tahun 9 Hijriah, Rasulullah SAW mengutus Qutbah bin Amir membawa 20 prajurit menuju daerah Khats'am. Meski menghadapi musuh dalam jumlah besar, pasukan Muslimin berhasil meraih kemenangan dan membawa ghanimah kembali ke Madinah.</p>
             </div>
             
-            <div class="mt-auto pt-3">
-                <p id="uiSirahSumber" contenteditable="true" class="text-[#db2777] text-sm sm:text-base md:text-lg italic">
-                    (Sirah Nabawiyah, Al Mubarak duri)
+            <!-- Sumber / Kitab Rujukan -->
+            <div class="mt-auto pt-2">
+                <p id="uiSirahSumber" contenteditable="true" class="text-[#b45309] text-xs sm:text-sm md:text-base font-medium italic">
+                    (Ar-Rahiq Al-Maktum, Syaikh Safiyurrahman Al-Mubarakfuri)
                 </p>
             </div>
         </div>
