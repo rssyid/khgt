@@ -8,7 +8,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -31,10 +30,28 @@ def get_by_gregorian(date_iso: str):
     cursor.execute("SELECT * FROM kalender_harian WHERE gregorian_date_iso = ?", (date_iso,))
     row = cursor.fetchone()
     conn.close()
-
     if not row:
         raise HTTPException(status_code=404, detail="Data tanggal tidak ditemukan")
     return dict(row)
+
+# 🌟 Daftar model fallback, urut dari yang paling diutamakan ke cadangan
+MODEL_FALLBACK_LIST = [
+    "gemini-flash-latest",
+    "gemini-2.5-flash",
+    "gemini-3.5-flash",
+    "gemini-3.6-flash",
+]
+
+def call_gemini(model: str, api_key: str, payload: dict):
+    """Panggil satu model tertentu. Return (result_dict, error_or_None)."""
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    headers = {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': api_key
+    }
+    req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers, method='POST')
+    with urllib.request.urlopen(req, timeout=30) as response:
+        return json.loads(response.read().decode('utf-8'))
 
 @app.get("/api/sirah")
 def get_sirah_ai(bulan: str, tanggal: str):
@@ -43,7 +60,6 @@ def get_sirah_ai(bulan: str, tanggal: str):
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY belum disetel di Vercel")
 
     prompt = f"""Carikan satu peristiwa penting dari Sirah Nabawiyah yang terjadi di bulan {bulan} (untuk dikaitkan dengan tanggal {tanggal}). 
-
 Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini tanpa tambahan teks apapun di luar JSON:
 {{
   "Judul": "Judul Peristiwa",
@@ -51,51 +67,66 @@ Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini ta
   "sumber": "Nama Kitab Rujukan"
 }}"""
 
-    # URL kita sesuaikan dengan format cURL Anda
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent"
-    
-    # 🌟 KUNCI PERBAIKAN: API Key dimasukkan lewat Headers (persis seperti -H di cURL)
-    headers = {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': api_key
-    }
-    
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.4}
     }
 
-    try:
-        # Request dikirim menggunakan metode POST dan Headers yang baru
-        req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers, method='POST')
-        with urllib.request.urlopen(req) as response:
-            result = json.loads(response.read().decode('utf-8'))
-            
-        text_response = result['candidates'][0]['content']['parts'][0]['text'].strip()
-        
-        # Pembersihan JSON
-        if text_response.startswith("```json"):
-            text_response = text_response[7:]
-        elif text_response.startswith("```"):
-            text_response = text_response[3:]
-            
-        if text_response.endswith("```"):
-            text_response = text_response[:-3]
-            
-        text_response = text_response.strip()
-        parsed_json = json.loads(text_response)
-        
-        if "Judul" not in parsed_json or "kontent" not in parsed_json or "sumber" not in parsed_json:
-             raise ValueError("Format JSON AI tidak lengkap")
+    last_error_msg = None
 
-        return parsed_json
+    for model in MODEL_FALLBACK_LIST:
+        try:
+            result = call_gemini(model, api_key, payload)
+            text_response = result['candidates'][0]['content']['parts'][0]['text'].strip()
 
-    except urllib.error.HTTPError as e:
-        # Jika gagal, kita akan melihat pesan error asli dari Google di pop-up
-        error_msg = e.read().decode('utf-8')
-        print("Google API Error:", error_msg)
-        raise HTTPException(status_code=500, detail=f"Gagal dari Google: {error_msg}")
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="AI mengembalikan format teks biasa (bukan JSON)")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+            # Pembersihan JSON
+            if text_response.startswith("```json"):
+                text_response = text_response[7:]
+            elif text_response.startswith("```"):
+                text_response = text_response[3:]
+            if text_response.endswith("```"):
+                text_response = text_response[:-3]
+            text_response = text_response.strip()
+
+            parsed_json = json.loads(text_response)
+
+            if "Judul" not in parsed_json or "kontent" not in parsed_json or "sumber" not in parsed_json:
+                raise ValueError("Format JSON AI tidak lengkap")
+
+            # Berhasil, langsung return (opsional: tambahkan info model yang dipakai)
+            parsed_json["_model_used"] = model
+            return parsed_json
+
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode('utf-8')
+            print(f"[{model}] Google API Error:", error_body)
+
+            # Cek apakah errornya quota (429 / RESOURCE_EXHAUSTED) -> lanjut coba model berikut
+            try:
+                error_json = json.loads(error_body)
+                status = error_json.get("error", {}).get("status", "")
+            except Exception:
+                status = ""
+
+            if e.code == 429 or status == "RESOURCE_EXHAUSTED":
+                last_error_msg = error_body
+                continue  # 🔁 coba model berikutnya
+            else:
+                # Error lain (401, 400, dsb) -> langsung gagal, tidak perlu ganti model
+                raise HTTPException(status_code=500, detail=f"Gagal dari Google ({model}): {error_body}")
+
+        except json.JSONDecodeError:
+            last_error_msg = f"[{model}] AI mengembalikan format teks biasa (bukan JSON)"
+            print(last_error_msg)
+            continue  # opsional: model lain mungkin lebih patuh format
+
+        except Exception as e:
+            last_error_msg = f"[{model}] {str(e)}"
+            print(last_error_msg)
+            continue
+
+    # Kalau semua model di daftar habis dan tetap gagal
+    raise HTTPException(
+        status_code=429,
+        detail=f"Semua model kena limit / gagal. Error terakhir: {last_error_msg}"
+    )
