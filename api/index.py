@@ -64,7 +64,8 @@ Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini ta
 {{
   "Judul": "Judul Peristiwa",
   "kontent": "Penjelasan inti maksimal 75 kata.",
-  "sumber": "Nama Kitab Rujukan"
+  "sumber": "Nama Kitab Rujukan",
+  "url_sumber": "URL validasi ke Google Books, Wikipedia, atau sumber terpercaya lainnya"
 }}"""
 
     payload = {
@@ -90,10 +91,12 @@ Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini ta
 
             parsed_json = json.loads(text_response)
 
-            if "Judul" not in parsed_json or "kontent" not in parsed_json or "sumber" not in parsed_json:
-                raise ValueError("Format JSON AI tidak lengkap")
+            # Validasi field wajib (tambah url_sumber)
+            required_fields = ["Judul", "kontent", "sumber", "url_sumber"]
+            for field in required_fields:
+                if field not in parsed_json:
+                    raise ValueError(f"Format JSON AI tidak lengkap, field '{field}' hilang")
 
-            # Berhasil, langsung return (opsional: tambahkan info model yang dipakai)
             parsed_json["_model_used"] = model
             return parsed_json
 
@@ -101,7 +104,6 @@ Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini ta
             error_body = e.read().decode('utf-8')
             print(f"[{model}] Google API Error:", error_body)
 
-            # Cek apakah errornya quota (429 / RESOURCE_EXHAUSTED) -> lanjut coba model berikut
             try:
                 error_json = json.loads(error_body)
                 status = error_json.get("error", {}).get("status", "")
@@ -110,22 +112,20 @@ Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini ta
 
             if e.code == 429 or status == "RESOURCE_EXHAUSTED":
                 last_error_msg = error_body
-                continue  # 🔁 coba model berikutnya
+                continue
             else:
-                # Error lain (401, 400, dsb) -> langsung gagal, tidak perlu ganti model
                 raise HTTPException(status_code=500, detail=f"Gagal dari Google ({model}): {error_body}")
 
         except json.JSONDecodeError:
             last_error_msg = f"[{model}] AI mengembalikan format teks biasa (bukan JSON)"
             print(last_error_msg)
-            continue  # opsional: model lain mungkin lebih patuh format
+            continue
 
         except Exception as e:
             last_error_msg = f"[{model}] {str(e)}"
             print(last_error_msg)
             continue
 
-    # Kalau semua model di daftar habis dan tetap gagal
     raise HTTPException(
         status_code=429,
         detail=f"Semua model kena limit / gagal. Error terakhir: {last_error_msg}"
