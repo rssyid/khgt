@@ -51,26 +51,29 @@ Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini ta
   "sumber": "Nama Kitab Rujukan"
 }}"""
 
-    # URL API Resmi Google Gemini 1.5 Flash
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
-    headers = {'Content-Type': 'application/json'}
+    # URL kita sesuaikan dengan format cURL Anda
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
     
-    # Payload Request
+    # 🌟 KUNCI PERBAIKAN: API Key dimasukkan lewat Headers (persis seperti -H di cURL)
+    headers = {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': api_key
+    }
+    
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.4}
     }
 
     try:
-        # Mengirim request HTTP secara langsung
+        # Request dikirim menggunakan metode POST dan Headers yang baru
         req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers, method='POST')
         with urllib.request.urlopen(req) as response:
             result = json.loads(response.read().decode('utf-8'))
             
-        # Mengekstrak teks balasan dari AI
         text_response = result['candidates'][0]['content']['parts'][0]['text'].strip()
         
-        # Membersihkan format Markdown JSON (```json ... ```)
+        # Pembersihan JSON
         if text_response.startswith("```json"):
             text_response = text_response[7:]
         elif text_response.startswith("```"):
@@ -80,24 +83,19 @@ Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini ta
             text_response = text_response[:-3]
             
         text_response = text_response.strip()
-        
-        # Parse text menjadi JSON asli
         parsed_json = json.loads(text_response)
         
-        # Validasi struktur
         if "Judul" not in parsed_json or "kontent" not in parsed_json or "sumber" not in parsed_json:
-             raise ValueError("Format JSON tidak memiliki key Judul/kontent/sumber")
+             raise ValueError("Format JSON AI tidak lengkap")
 
         return parsed_json
 
     except urllib.error.HTTPError as e:
-        # Menangkap error dari server Google
+        # Jika gagal, kita akan melihat pesan error asli dari Google di pop-up
         error_msg = e.read().decode('utf-8')
         print("Google API Error:", error_msg)
-        raise HTTPException(status_code=500, detail=f"Akses Gemini API Ditolak/Gagal (Cek API Key Anda)")
+        raise HTTPException(status_code=500, detail=f"Gagal dari Google: {error_msg}")
     except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Gemini mengembalikan format yang bukan JSON")
+        raise HTTPException(status_code=500, detail="AI mengembalikan format teks biasa (bukan JSON)")
     except Exception as e:
-        error_trace = traceback.format_exc()
-        print(error_trace)
         raise HTTPException(status_code=500, detail=str(e))
