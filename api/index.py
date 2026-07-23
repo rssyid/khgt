@@ -36,8 +36,6 @@ def get_by_gregorian(date_iso: str):
 
 # 🌟 Daftar model fallback, urut dari yang paling diutamakan ke cadangan
 MODEL_FALLBACK_LIST = [
-    "gemini-flash-latest",
-    "gemini-2.5-flash",
     "gemini-3.5-flash",
     "gemini-3.6-flash",
 ]
