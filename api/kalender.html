@@ -3,178 +3,103 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalender Hijriah Global Tunggal (KHGT)</title>
+<title>Kalender KHGT</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-  body {
-    margin: 0; padding: 20px; background: #eef0f6;
-    display: flex; flex-direction: column; align-items: center; min-height: 100vh;
-  }
-  .controls { display:flex; gap:10px; margin-bottom:16px; }
-  .controls button, .controls input[type=date] {
-    padding: 10px 16px; border-radius: 8px; border: 1px solid #ccc;
-    background:#fff; cursor:pointer; font-size:14px;
-  }
-  .controls button:hover { background:#e6e6f7; }
-  #card {
-    width: 380px; background:#fff; border-radius: 20px; overflow:hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15); position:relative;
-  }
-  .header {
-    text-align:center; padding: 24px 16px 8px; position:relative; overflow:hidden;
-  }
-  .header::before {
-    content:""; position:absolute; top:-40px; left:-40px; width:220px; height:220px;
-    background: radial-gradient(circle, #cfd3ea 0%, transparent 70%);
-    z-index:0;
-  }
-  .title { font-weight:800; font-size:20px; color:#111; margin:0; line-height:1.3; position:relative; z-index:1;}
-  .weekday {
-    font-weight:900; font-size:38px; color:#2b2f8f; margin: 10px 0 16px; position:relative; z-index:1;
-    text-transform:uppercase;
-  }
-  .pill-row { display:flex; align-items:center; margin: 0 20px 10px; position:relative; z-index:1; }
-  .day-box {
-    width:60px; height:60px; background:#fff; border:2px solid #eee; border-radius:12px;
-    display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:800;
-    color:#111; box-shadow: 0 2px 6px rgba(0,0,0,0.1); flex-shrink:0;
-  }
-  .pill { flex:1; margin-left:-14px; padding: 16px 16px 16px 34px; border-radius: 30px; font-size:18px; font-weight:700; color:#fff; }
-  .pill-hijri { background:#a8adcf; }
-  .pill-greg { background:#2b2f8f; }
-  .pasaran-badge {
-    text-align:center; font-size:13px; font-weight:700; color:#6b6f9c; margin: -4px 0 14px;
-    position:relative; z-index:1;
-  }
-  .sirah { padding: 6px 22px 22px; position:relative; z-index:1; }
-  .sirah-label { color:#e05fb0; font-weight:700; font-size:13px; text-align:center; margin-bottom:4px; }
-  .sirah-title { color:#a052d6; font-weight:700; font-size:15px; text-align:center; margin-bottom:10px; }
-  .sirah-text { color:#20255c; font-size:14.5px; line-height:1.55; }
-  .sirah-text b { color:#161a45; }
-  .no-event { text-align:center; color:#999; font-size:14px; padding: 20px 0; }
-  .loading { text-align:center; padding: 60px 0; color:#888; }
-  footer { margin-top:14px; font-size:12px; color:#888; }
+:root {
+  --bg:#efeff2; --card:#f7f7fa; --text:#141414; --muted:#5c5e86; --primary:#31339a; --soft:#b6b7da; --accent:#d96bcd;
+  --space-2:.5rem; --space-3:.75rem; --space-4:1rem; --space-5:1.25rem; --space-6:1.5rem; --space-8:2rem;
+  --radius:20px; --pill:999px;
+}
+*{box-sizing:border-box} body{margin:0;min-height:100vh;background:var(--bg);font-family:'Satoshi',sans-serif;color:var(--text);padding:16px}
+.wrap{max-width:460px;margin:0 auto}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.controls .wide{grid-column:span 2}
+button,input{min-height:44px;border-radius:14px;border:1px solid #d8d9e6;background:#fff;padding:10px 14px;font:inherit}
+button{font-weight:700;color:#252772}
+.card{background:var(--card);border-radius:28px;padding:18px;box-shadow:0 10px 28px rgba(0,0,0,.08);position:relative;overflow:hidden}
+.mark{position:absolute;left:-40px;top:90px;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle, rgba(106,108,178,.22) 0%, rgba(106,108,178,.08) 42%, rgba(106,108,178,0) 70%)}
+.title{text-align:center;font-size:clamp(1.6rem,3vw,2rem);font-weight:900;line-height:1.15;margin:0 0 8px}
+.weekday{text-align:center;font-size:clamp(2.2rem,6vw,3.4rem);font-weight:900;color:var(--primary);letter-spacing:.02em;margin:0 0 14px;text-transform:uppercase}
+.pill-row{display:flex;align-items:center;margin:0 0 12px;position:relative;z-index:2}
+.day-box{width:66px;height:66px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:2.1rem;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.08);flex:0 0 66px}
+.pill{margin-left:-14px;padding:18px 18px 18px 34px;border-radius:999px;color:#fff;font-weight:800;font-size:1.15rem;letter-spacing:.08em;flex:1;text-transform:uppercase}
+.pill.h{background:var(--soft);color:#fff}.pill.g{background:var(--primary)}
+.meta{text-align:center;color:var(--muted);font-weight:700;font-size:.95rem;margin:2px 0 16px}
+.section{padding:8px 8px 0;position:relative;z-index:2}.sirah-label{text-align:center;color:#e06dc8;font-weight:700;font-size:1.05rem;margin-bottom:4px}
+.sirah-title{text-align:center;color:#b062d6;font-weight:700;font-size:1.05rem;margin-bottom:10px}
+.sirah-text{font-size:1.05rem;line-height:1.45;color:#28306c;text-align:left}.sirah-empty{text-align:center;color:#7b7d9a;padding:18px 0 8px}
+.note{text-align:center;font-size:.8rem;color:#7f8199;margin-top:10px}
+.loading{padding:40px 12px;text-align:center;color:#6b6d85}
+.err{color:#a01859}
 </style>
 </head>
 <body>
+<div class="wrap">
+  <div class="controls">
+    <button id="prevBtn">← Sebelumnya</button>
+    <button id="nextBtn">Berikutnya →</button>
+    <input id="datePicker" class="wide" type="date">
+    <button id="todayBtn">Hari Ini</button>
+    <button id="copyBtn">Copy Gambar</button>
+  </div>
 
-<div class="controls">
-  <button id="prevBtn">&#8592; Sebelumnya</button>
-  <input type="date" id="datePicker">
-  <button id="todayBtn">Hari Ini</button>
-  <button id="nextBtn">Berikutnya &#8594;</button>
-  <button id="copyBtn">&#128203; Copy Gambar</button>
+  <div id="card" class="card"><div class="loading">Memuat data KHGT...</div></div>
+  <div class="note">Sumber: API KHGT Muhammadiyah</div>
 </div>
-
-<div id="card">
-  <div class="loading" id="loadingState">Memuat data KHGT...</div>
-</div>
-
-<footer>Sumber data: khgt.muhammadiyah.or.id</footer>
-
 <script>
-const API_BASE = "/api/khgt"; // relatif, otomatis mengikuti domain Render tempat file ini dihost
-
-const HIJRI_MONTH_UPPER = {
-  "Muharam":"MUHARAM","Safar":"SAFAR","Rabiul Awal":"RABIUL AWAL","Rabiul Akhir":"RABIUL AKHIR",
-  "Jumadil Awal":"JUMADIL AWAL","Jumadil Akhir":"JUMADIL AKHIR","Rajab":"RAJAB","Syaban":"SYABAN",
-  "Ramadan":"RAMADAN","Syawal":"SYAWAL","Zulkaidah":"ZULKAIDAH","Zulhijah":"ZULHIJAH"
-};
-const MONTH_ID_UPPER = ["","JANUARI","FEBRUARI","MARET","APRIL","MEI","JUNI","JULI","AGUSTUS","SEPTEMBER","OKTOBER","NOVEMBER","DESEMBER"];
-
+const API_BASE = '/api/khgt';
+const MONTH_ID = ['', 'JANUARI','FEBRUARI','MARET','APRIL','MEI','JUNI','JULI','AGUSTUS','SEPTEMBER','OKTOBER','NOVEMBER','DESEMBER'];
 let currentDate = new Date();
-
-function fmtISO(d) {
-  return d.toISOString().slice(0,10);
-}
-
-async function loadData(dateObj) {
-  const iso = fmtISO(dateObj);
-  document.getElementById('datePicker').value = iso;
-  const card = document.getElementById('card');
-  card.innerHTML = '<div class="loading">Memuat data KHGT...</div>';
-  try {
-    const res = await fetch(`${API_BASE}?date=${iso}`);
-    if (!res.ok) throw new Error('Data tidak ditemukan');
+function iso(d){const x=new Date(d); x.setMinutes(x.getMinutes()-x.getTimezoneOffset()); return x.toISOString().slice(0,10)}
+async function loadData(d){
+  currentDate = new Date(d);
+  const date = iso(currentDate);
+  document.getElementById('datePicker').value = date;
+  document.getElementById('card').innerHTML = '<div class="loading">Memuat data KHGT...</div>';
+  try{
+    const res = await fetch(`${API_BASE}?date=${date}`);
     const data = await res.json();
-    renderCard(data);
-  } catch (err) {
-    card.innerHTML = `<div class="loading">Gagal memuat data: ${err.message}</div>`;
+    if(!res.ok) throw new Error(data.error || 'Gagal memuat data');
+    render(data);
+  }catch(err){
+    document.getElementById('card').innerHTML = `<div class="loading err">${err.message}</div>`;
   }
 }
-
-function renderCard(data) {
-  const card = document.getElementById('card');
-  const hijriMonthUpper = HIJRI_MONTH_UPPER[data.hijri_month] || data.hijri_month.toUpperCase();
-  const gregMonthUpper = MONTH_ID_UPPER[data.gregorian_month];
-
-  let sirahHtml = '<div class="no-event">Tidak ada catatan sirah khusus pada tanggal ini.</div>';
-  if (data.is_special_day && data.event_name) {
-    sirahHtml = `
-      <div class="sirah-label">SIRAH NABAWIYAH</div>
-      <div class="sirah-title">${data.event_name}</div>
-      <div class="sirah-text">${data.event_name}</div>
-    `;
-  }
-
-  card.innerHTML = `
-    <div class="header">
-      <p class="title">KALENDER HIJRIAH<br>GLOBAL TUNGGAL<br>(KHGT)</p>
-      <div class="weekday">${data.weekday_name_id}</div>
-    </div>
-    <div class="pill-row">
-      <div class="day-box">${data.hijri_day}</div>
-      <div class="pill pill-hijri">${hijriMonthUpper} ${data.hijri_year} H</div>
-    </div>
-    <div class="pill-row">
-      <div class="day-box">${data.gregorian_day}</div>
-      <div class="pill pill-greg">${gregMonthUpper} ${data.gregorian_year} M</div>
-    </div>
-    <div class="pasaran-badge">${data.pasaran ? data.pasaran : ''}</div>
-    <div class="sirah">${sirahHtml}</div>
-  `;
+function render(d){
+  const eventTitle = d.event_name ? d.event_name : '';
+  const eventBody = d.event_name ? d.event_name : '';
+  document.getElementById('card').innerHTML = `
+    <div class="mark"></div>
+    <h1 class="title">KALENDER HIJRIAH<br>GLOBAL TUNGGAL<br>(KHGT)</h1>
+    <div class="weekday">${d.weekday_name_id}</div>
+    <div class="pill-row"><div class="day-box">${d.hijri_day ?? '-'}</div><div class="pill h">${(d.hijri_month || '').toUpperCase()} ${d.hijri_year ?? ''} H</div></div>
+    <div class="pill-row"><div class="day-box">${d.gregorian_day}</div><div class="pill g">${MONTH_ID[d.gregorian_month]} ${d.gregorian_year} M</div></div>
+    <div class="meta">${d.pasaran || ''}${d.pasaran ? ' · ' : ''}${d.gregorian_date_iso}</div>
+    <div class="section">
+      ${d.is_special_day ? `<div class="sirah-label">SIRAH NABAWIYAH</div><div class="sirah-title">${eventTitle}</div><div class="sirah-text">${eventBody}</div>` : `<div class="sirah-empty">Tidak ada catatan peristiwa khusus pada tanggal ini.</div>`}
+    </div>`;
 }
-
-document.getElementById('prevBtn').addEventListener('click', () => {
-  currentDate.setDate(currentDate.getDate() - 1);
-  loadData(currentDate);
-});
-document.getElementById('nextBtn').addEventListener('click', () => {
-  currentDate.setDate(currentDate.getDate() + 1);
-  loadData(currentDate);
-});
-document.getElementById('todayBtn').addEventListener('click', () => {
-  currentDate = new Date();
-  loadData(currentDate);
-});
-document.getElementById('datePicker').addEventListener('change', (e) => {
-  currentDate = new Date(e.target.value + 'T00:00:00');
-  loadData(currentDate);
-});
-document.getElementById('copyBtn').addEventListener('click', async () => {
-  const card = document.getElementById('card');
-  try {
-    const canvas = await html2canvas(card, { scale: 3, backgroundColor: '#ffffff' });
-    canvas.toBlob(async (blob) => {
-      try {
-        await navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': blob })
-        ]);
-        alert('Gambar kalender berhasil disalin! Silakan paste (Ctrl+V) ke WhatsApp.');
-      } catch (err) {
-        const link = document.createElement('a');
-        link.download = 'kalender-khgt.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+document.getElementById('prevBtn').onclick=()=>{const d=new Date(currentDate); d.setDate(d.getDate()-1); loadData(d)};
+document.getElementById('nextBtn').onclick=()=>{const d=new Date(currentDate); d.setDate(d.getDate()+1); loadData(d)};
+document.getElementById('todayBtn').onclick=()=>loadData(new Date());
+document.getElementById('datePicker').onchange=(e)=>loadData(new Date(e.target.value+'T00:00:00'));
+document.getElementById('copyBtn').onclick=async()=>{
+  const node=document.getElementById('card');
+  try{
+    const canvas=await html2canvas(node,{scale:3,backgroundColor:'#f7f7fa'});
+    canvas.toBlob(async(blob)=>{
+      try{
+        await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+        alert('Gambar berhasil disalin.');
+      }catch(e){
+        const a=document.createElement('a'); a.href=canvas.toDataURL('image/png'); a.download='kalender-khgt.png'; a.click();
       }
     });
-  } catch (err) {
-    alert('Gagal membuat gambar: ' + err.message);
-  }
-});
-
-loadData(currentDate);
+  }catch(e){alert('Gagal membuat gambar');}
+};
+loadData(new Date());
 </script>
 </body>
 </html>
