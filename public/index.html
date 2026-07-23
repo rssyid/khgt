@@ -259,22 +259,22 @@
             try {
                 const response = await fetch(`/api/sirah?bulan=${bulan}&tanggal=${tanggal}`);
                 
-                // Jika gagal, langsung lempar error agar ditangkap oleh catch
-                if (!response.ok) throw new Error("API Gagal");
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || "Terjadi kesalahan pada server");
+                }
                 
                 const data = await response.json();
                 
-                // Tulis hasil AI ke dalam kanvas gambar
                 document.getElementById('uiSirahJudul').innerText = data.Judul;
                 document.getElementById('uiSirahKonten').innerHTML = `<p class="mb-2">${data.kontent}</p>`;
                 document.getElementById('uiSirahSumber').innerText = `(${data.sumber})`;
                 
             } catch (error) {
                 console.error("AI Error:", error);
-                alert("Gagal memuat Sirah dari AI. Teks akan dipertahankan pada teks sebelumnya.");
-                // Teks tidak diubah sama sekali (fallback ke default/teks terakhir)
+                // Alert sekarang menampilkan error spesifik dari backend
+                alert("Gagal memuat Sirah AI. Penyebab: " + error.message); 
             } finally {
-                // Kembalikan status tombol
                 btn.innerHTML = originalText;
                 btn.disabled = false;
                 btn.classList.remove('opacity-70', 'cursor-not-allowed');
