@@ -27,6 +27,7 @@ NEON_URL = os.environ.get("DATABASE_URL")
 # ============================================================
 _db_conn = None
 _sirah_table_ready = False
+_cache_table_ready = False
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
@@ -38,7 +39,6 @@ def get_neon_connection():
     if not NEON_URL:
         raise HTTPException(status_code=500, detail="DATABASE_URL belum disetel di Vercel")
     
-    # Periksa apakah koneksi sudah ada dan masih terbuka (.closed == 0 artinya open)
     if _db_conn is None or _db_conn.closed != 0:
         _db_conn = psycopg2.connect(NEON_URL)
     return _db_conn
@@ -49,8 +49,6 @@ def ensure_sirah_table():
         return
     conn = get_neon_connection()
     cur = conn.cursor()
-    
-    # Buat tabel utama jika belum ada
     cur.execute("""
         CREATE TABLE IF NOT EXISTS sirah_edits (
             date_iso TEXT PRIMARY KEY,
@@ -61,20 +59,36 @@ def ensure_sirah_table():
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
-    # Pastikan kolom 'kategori' ada jika tabel sudah pernah dibuat sebelumnya
     cur.execute("ALTER TABLE sirah_edits ADD COLUMN IF NOT EXISTS kategori TEXT DEFAULT 'Sirah Nabawiyah'")
-    
     conn.commit()
     cur.close()
     _sirah_table_ready = True
+
+def ensure_cache_table():
+    global _cache_table_ready
+    if _cache_table_ready:
+        return
+    conn = get_neon_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS sirah_ai_cache (
+            hijri_key TEXT PRIMARY KEY,
+            judul TEXT,
+            konten_html TEXT,
+            sumber TEXT,
+            url_sumber TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    cur.close()
+    _cache_table_ready = True
 
 # ============================================================
 # ENDPOINT TANGGAL (Dengan Cache-Control 1 Tahun)
 # ============================================================
 @app.get("/api/date/{date_iso}")
 def get_by_gregorian(date_iso: str, response: Response):
-    # Optimasi Caching: Data kalender bersifat statis, berikan instruksi cache 1 tahun
     response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
     
     conn = get_db_connection()
@@ -87,7 +101,7 @@ def get_by_gregorian(date_iso: str, response: Response):
     return dict(row)
 
 # =============================================
-# ENDPOINT SIMPAN & MUAT TEKS SIRAH (NEON DB)
+# ENDPOINT SIMPAN, MUAT, & HAPUS TEKS (NEON DB)
 # =============================================
 
 class SirahEdit(BaseModel):
@@ -116,7 +130,6 @@ def simpan_sirah(data: SirahEdit):
         """, (data.date_iso, data.kategori, data.judul, data.konten_html, data.sumber))
         conn.commit()
         cur.close()
-        # CATATAN: Jangan panggil conn.close() agar koneksi bisa dipakai ulang di request berikutnya!
         return {"success": True, "date_iso": data.date_iso}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal menyimpan ke database: {str(e)}")
@@ -139,8 +152,22 @@ def load_sirah_tersimpan(date: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal memuat dari database: {str(e)}")
 
+@app.delete("/api/sirah-simpan")
+def hapus_sirah_tersimpan(date: str):
+    """Hapus editan sirah tersimpan untuk satu tanggal dari Neon PostgreSQL."""
+    ensure_sirah_table()
+    try:
+        conn = get_neon_connection()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM sirah_edits WHERE date_iso = %s", (date,))
+        conn.commit()
+        cur.close()
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal menghapus data: {str(e)}")
+
 # =============================================
-# ENDPOINT AI SIRAH (GEMINI)
+# ENDPOINT AI SIRAH (GEMINI DENGAN CACHE NEON)
 # =============================================
 
 MODEL_FALLBACK_LIST = [
@@ -162,6 +189,29 @@ def call_gemini(model: str, api_key: str, payload: dict):
 
 @app.get("/api/sirah")
 def get_sirah_ai(bulan: str, tanggal: str):
+    ensure_cache_table()
+    hijri_key = f"{bulan.strip()}_{tanggal.strip()}".lower()
+    
+    # 1. Coba ambil dari cache database Neon dulu (Sangat Cepat & Hemat API)
+    try:
+        conn = get_neon_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT * FROM sirah_ai_cache WHERE hijri_key = %s", (hijri_key,))
+        cached = cur.fetchone()
+        cur.close()
+        if cached:
+            return {
+                "Judul": cached["judul"],
+                "kontent": cached["konten_html"],
+                "sumber": cached["sumber"],
+                "url_sumber": cached["url_sumber"],
+                "_cached": True
+            }
+    except Exception as e:
+        print("Gagal membaca cache AI Neon:", e)
+        # Jika cache gagal, lanjutkan panggil Gemini
+
+    # 2. Panggil API Gemini jika belum ada di cache
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY belum disetel di Vercel")
@@ -204,6 +254,21 @@ Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini ta
                     raise ValueError(f"Format JSON AI tidak lengkap, field '{field}' hilang")
 
             parsed_json["_model_used"] = model
+            
+            # 3. Simpan hasil generate AI ke cache database Neon
+            try:
+                conn = get_neon_connection()
+                cur = conn.cursor()
+                cur.execute("""
+                    INSERT INTO sirah_ai_cache (hijri_key, judul, konten_html, sumber, url_sumber)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON CONFLICT (hijri_key) DO NOTHING
+                """, (hijri_key, parsed_json["Judul"], parsed_json["kontent"], parsed_json["sumber"], parsed_json["url_sumber"]))
+                conn.commit()
+                cur.close()
+            except Exception as cache_err:
+                print("Gagal menyimpan cache AI Neon:", cache_err)
+
             return parsed_json
 
         except urllib.error.HTTPError as e:
