@@ -72,16 +72,18 @@
             font-size: clamp(2.2rem, 8.88cqw, 5rem);
             letter-spacing: -0.03em;
             line-height: 1;
+            /* Tambah space 2x di bawah hari */
+            margin-bottom: clamp(1rem, 3.55cqw, 2rem);
         }
 
-        /* Subtitle & akronim di header */
+        /* Subtitle & akronim di header (Diperbesar 1.3x) */
         .canvas-title-sub {
             display: block;
-            font-size: clamp(0.75rem, 2cqw, 1.125rem);
+            font-size: clamp(0.975rem, 2.6cqw, 1.46rem);
             letter-spacing: 0.2em;
         }
         .canvas-title-acr {
-            font-size: clamp(1.25rem, 4cqw, 2.25rem);
+            font-size: clamp(1.625rem, 5.2cqw, 2.925rem);
             letter-spacing: 0.1em;
         }
 
@@ -114,11 +116,11 @@
             font-size: clamp(0.7rem, 2.22cqw, 1.25rem);
         }
 
-        /* Gap antar baris tanggal (Hijriah & Masehi) */
+        /* Gap antar baris tanggal (Hijriah & Masehi) - Diperbesar 2x */
         .date-rows-gap {
             display: flex;
             flex-direction: column;
-            gap: clamp(0.35rem, 1.11cqw, 0.625rem);
+            gap: clamp(0.7rem, 2.22cqw, 1.25rem);
         }
 
         /* Card sirah */
@@ -237,7 +239,7 @@
         </div>
 
         <!-- Bagian Hari & Event -->
-        <div class="relative z-10 flex-none flex flex-col items-center mt-2">
+        <div class="relative z-10 flex-none flex flex-col items-center mt-[clamp(0.5rem,1.5cqw,1rem)]">
             <h2 id="uiHari" class="day-text font-black text-[#2c2677] uppercase drop-shadow-sm">-</h2>
             
             <!-- Wadah Event Dinamis (Muncul jika ada event di database) -->
