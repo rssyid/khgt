@@ -22,7 +22,7 @@
 
         /* ============================================================
            KANVAS UTAMA
-           - padding & border skala dengan viewport (vw + clamp)
+           - padding & border skala dengan container (cqw)
            - container-type: inline-size → anak pakai unit cqw
              (cqw = % lebar canvas, bukan viewport)
            ============================================================ */
@@ -37,16 +37,16 @@
             display: flex;
             flex-direction: column;
 
-            /* Padding proporsional: ~3rem di 900px, ~1rem di 375px */
-            padding: clamp(0.75rem, 3.5vw, 2rem) clamp(1rem, 5.3vw, 3rem);
+            /* Padding proporsional: ~3rem (48px) di 900px, ~1.5rem (24px) di 375px */
+            padding: clamp(1rem, 3.55cqw, 2rem) clamp(1.5rem, 5.33cqw, 3rem);
 
             /* Aktifkan Container Query agar elemen anak bisa pakai cqw */
             container-type: inline-size;
 
-            /* Border ganda yang skala proporsional */
-            border: clamp(4px, 1.05vw, 10px) solid #003F72;
-            outline: clamp(1.5px, 0.42vw, 4px) solid #003F72;
-            outline-offset: clamp(-8px, -0.84vw, -3px);
+            /* Border ganda yang skala proporsional terhadap kontainer */
+            border: clamp(4px, 1.11cqw, 10px) solid #003F72;
+            outline: clamp(1.5px, 0.44cqw, 4px) solid #003F72;
+            outline-offset: clamp(-8px, -0.88cqw, -3px);
         }
 
         .watermark {
@@ -69,7 +69,7 @@
 
         /* Nama hari besar (SENIN, SELASA, …) */
         .day-text {
-            font-size: clamp(2rem, 7cqw, 5rem);
+            font-size: clamp(2.2rem, 8.88cqw, 5rem);
             letter-spacing: -0.03em;
             line-height: 1;
         }
@@ -77,55 +77,55 @@
         /* Subtitle & akronim di header */
         .canvas-title-sub {
             display: block;
-            font-size: clamp(0.65rem, 1.5cqw, 1.125rem);
+            font-size: clamp(0.75rem, 2cqw, 1.125rem);
             letter-spacing: 0.2em;
         }
         .canvas-title-acr {
-            font-size: clamp(1.1rem, 2.8cqw, 2.25rem);
+            font-size: clamp(1.25rem, 4cqw, 2.25rem);
             letter-spacing: 0.1em;
         }
 
         /* Badge nama event / hari khusus */
         .canvas-event-text {
-            font-size: clamp(0.6rem, 1.1cqw, 1rem);
+            font-size: clamp(0.65rem, 1.78cqw, 1rem);
         }
 
         /* Pill pembungkus tanggal (Hijriah / Masehi) */
         .date-pill {
-            border-radius: clamp(1.2rem, 2.5cqw, 2.5rem);
-            padding: clamp(0.3rem, 0.6cqw, 0.625rem);
+            border-radius: clamp(1.2rem, 4.44cqw, 2.5rem);
+            padding: clamp(0.3rem, 1.11cqw, 0.625rem);
         }
 
         /* Kotak angka tanggal di dalam pill */
         .date-num-box {
-            font-size: clamp(1.3rem, 3.5cqw, 3rem);
-            height: clamp(3rem, 7cqw, 5rem);
-            width: clamp(3.5rem, 7.5cqw, 7rem);
-            border-radius: clamp(0.8rem, 1.8cqw, 1.8rem);
+            font-size: clamp(1.5rem, 5.33cqw, 3rem);
+            height: clamp(2.5rem, 8.88cqw, 5rem);
+            width: clamp(3.5rem, 12.44cqw, 7rem);
+            border-radius: clamp(0.9rem, 3.2cqw, 1.8rem);
         }
 
         /* Teks bulan di dalam pill */
         .date-month-text {
-            font-size: clamp(0.85rem, 2.1cqw, 1.5rem);
+            font-size: clamp(0.85rem, 2.67cqw, 1.5rem);
         }
 
         /* Teks tahun di dalam pill */
         .date-year-text {
-            font-size: clamp(0.7rem, 1.7cqw, 1.25rem);
+            font-size: clamp(0.7rem, 2.22cqw, 1.25rem);
         }
 
         /* Gap antar baris tanggal (Hijriah & Masehi) */
         .date-rows-gap {
             display: flex;
             flex-direction: column;
-            gap: clamp(0.35rem, 0.8cqw, 0.625rem);
+            gap: clamp(0.35rem, 1.11cqw, 0.625rem);
         }
 
         /* Card sirah */
         .sirah-card {
             background-color: rgba(255, 255, 255, 0.65);
-            padding: clamp(0.6rem, 1.5cqw, 1.25rem) clamp(0.75rem, 2cqw, 2rem);
-            border-radius: clamp(0.6rem, 1.2cqw, 1.25rem);
+            padding: clamp(0.6rem, 2.22cqw, 1.25rem) clamp(1rem, 3.55cqw, 2rem);
+            border-radius: clamp(0.6rem, 2.22cqw, 1.25rem);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
             width: 88%;
             box-sizing: border-box;
@@ -134,23 +134,23 @@
 
         /* Badge "Sirah Nabawiyah" */
         .sirah-badge-text {
-            font-size: clamp(0.6rem, 1.1cqw, 1rem);
-            padding: 0.2em clamp(0.5rem, 1cqw, 0.875rem);
+            font-size: clamp(0.65rem, 1.78cqw, 1rem);
+            padding: 0.2em clamp(0.5rem, 1.78cqw, 0.875rem);
         }
 
         /* Judul peristiwa sirah */
         .sirah-judul-text {
-            font-size: clamp(0.9rem, 2.3cqw, 1.875rem);
+            font-size: clamp(1rem, 3.33cqw, 1.875rem);
         }
 
         /* Isi konten sirah */
         .sirah-konten-text {
-            font-size: clamp(0.65rem, 1.35cqw, 1.125rem);
+            font-size: clamp(0.75rem, 2cqw, 1.125rem);
         }
 
         /* Sumber / kitab rujukan */
         .sirah-sumber-text {
-            font-size: clamp(0.55rem, 1cqw, 1rem);
+            font-size: clamp(0.65rem, 1.78cqw, 1rem);
         }
 
         /* Font Amiri untuk judul sirah */
@@ -266,18 +266,18 @@
         </div>
 
         <!-- Bagian Sirah Nabawiyah -->
-        <div class="relative z-10 flex-grow flex flex-col items-center text-center mt-[clamp(0.75rem,1.5cqw,1.25rem)] px-2 justify-start">
+        <div class="relative z-10 flex-grow flex flex-col items-center text-center mt-[clamp(1rem,2.22cqw,1.5rem)] px-2 justify-start">
             <div class="sirah-card flex flex-col items-center">
 
                 <!-- Badge Kategori -->
-                <div class="mb-[clamp(0.25rem,0.6cqw,0.375rem)]">
+                <div class="mb-[clamp(0.35rem,1cqw,0.6rem)]">
                     <span class="sirah-badge-text bg-[#b3b6d4]/10 text-[#2c2677] rounded-full font-bold tracking-widest uppercase whitespace-nowrap">
                         Sirah Nabawiyah
                     </span>
                 </div>
 
                 <!-- Judul Peristiwa -->
-                <div class="mb-[clamp(0.25rem,0.6cqw,0.375rem)] w-full">
+                <div class="mb-[clamp(0.35rem,1cqw,0.6rem)] w-full">
                     <h4 id="uiSirahJudul" contenteditable="true" class="sirah-title-font sirah-judul-text text-[#1e293b] font-bold leading-tight">
                         Judul Peristiwa
                     </h4>
@@ -289,7 +289,7 @@
                 </div>
 
                 <!-- Sumber / Kitab Rujukan -->
-                <div class="mt-[clamp(0.35rem,0.8cqw,0.625rem)] pt-[clamp(0.25rem,0.6cqw,0.5rem)] border-t border-gray-200/80 w-full">
+                <div class="mt-[clamp(0.5rem,1.3cqw,0.8rem)] pt-[clamp(0.35rem,1cqw,0.6rem)] border-t border-gray-200/80 w-full">
                     <p id="uiSirahSumber" contenteditable="true" class="sirah-sumber-text text-[#b45309] font-medium italic">
                         (Kitab Rujukan)
                     </p>
