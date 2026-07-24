@@ -61,6 +61,11 @@
             font-family: 'Amiri', serif;
         }
 
+        /* Pastikan elemen b, i, u di-render dengan benar di dalam contenteditable */
+        [contenteditable="true"] b { font-weight: bold; }
+        [contenteditable="true"] i { font-style: italic; }
+        [contenteditable="true"] u { text-decoration: underline; }
+
         /* Card Kotak Teks Sirah dengan Outline Tipis */
         .sirah-card {
             background-color: rgba(255, 255, 255, 0.65);
@@ -362,6 +367,115 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadDateData(currentDate);
         });
+
+
+
+        // ==========================================
+        // FITUR INLINE FLOATING TOOLBAR (BUBBLE MENU)
+        // ==========================================
+        const toolbar = document.getElementById('inlineToolbar');
+        let currentEditable = null;
+
+        // Deteksi setiap kali pengguna selesai memblok teks
+        document.addEventListener('mouseup', (e) => {
+            // Jangan sembunyikan toolbar jika tombol di dalam toolbar sedang diklik
+            if (e.target.closest('#inlineToolbar')) return;
+
+            setTimeout(() => {
+                const selection = window.getSelection();
+                
+                // Jika ada teks yang diseleksi (diblok)
+                if (selection.toString().trim().length > 0) {
+                    const range = selection.getRangeAt(0);
+                    
+                    // Cek apakah teks yang diseleksi berada di dalam kotak yang bisa diedit
+                    let node = selection.anchorNode;
+                    if (node.nodeType === 3) node = node.parentNode; // Ambil elemen induk jika berupa text node
+                    
+                    const editableParent = node.closest('[contenteditable="true"]');
+                    
+                    if (editableParent) {
+                        currentEditable = editableParent;
+                        const rect = range.getBoundingClientRect();
+                        
+                        // Kalkulasi posisi agar toolbar melayang tepat di atas teks yang diblok
+                        const top = rect.top + window.scrollY - toolbar.offsetHeight - 10;
+                        const left = rect.left + window.scrollX + (rect.width / 2) - (toolbar.offsetWidth / 2);
+                        
+                        // Terapkan posisi dan tampilkan
+                        toolbar.style.top = `${top}px`;
+                        toolbar.style.left = `${left}px`;
+                        toolbar.classList.remove('hidden');
+                    } else {
+                        toolbar.classList.add('hidden');
+                    }
+                } else {
+                    toolbar.classList.add('hidden');
+                }
+            }, 10);
+        });
+
+        // Sembunyikan saat mulai mengetik
+        document.addEventListener('keyup', (e) => {
+            if (e.key !== 'Shift' && !e.ctrlKey) {
+                const selection = window.getSelection();
+                if (selection.toString().trim().length === 0) {
+                    toolbar.classList.add('hidden');
+                }
+            }
+        });
+
+        // Eksekusi Format Teks (B, I, U)
+        document.querySelectorAll('.format-btn').forEach(btn => {
+            btn.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // Wajib agar teks tidak kehilangan seleksi/blok saat tombol diklik
+                const command = btn.getAttribute('data-command');
+                
+                // Gunakan document.execCommand untuk format teks inline
+                document.execCommand(command, false, null);
+            });
+        });
+
+        // Eksekusi Ubah Ukuran Teks (A+, A-)
+        // Catatan: Ini akan memperbesar/memperkecil seluruh blok teks (Judul/Isi/Sumber) yang sedang aktif
+        document.getElementById('inlineSizeUp').addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            if(currentEditable) ubahUkuranInline('up');
+        });
+        
+        document.getElementById('inlineSizeDown').addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            if(currentEditable) ubahUkuranInline('down');
+        });
+
+        function ubahUkuranInline(action) {
+            const style = window.getComputedStyle(currentEditable, null).getPropertyValue('font-size');
+            const currentSize = parseFloat(style);
+            
+            const newSize = action === 'up' ? currentSize + 2 : currentSize - 2;
+            currentEditable.style.fontSize = newSize + 'px';
+            
+            // Jaga line-height agar proporsional
+            if (currentEditable.id === 'uiSirahJudul') {
+                currentEditable.style.lineHeight = '1.2';
+            } else {
+                currentEditable.style.lineHeight = '1.5'; 
+            }
+        }
+
+        
     </script>
+
+<!-- INLINE FLOATING TOOLBAR -->
+    <div id="inlineToolbar" class="absolute z-50 hidden bg-[#1e293b] text-white shadow-xl rounded-lg px-2 py-1 flex items-center gap-1 transition-opacity duration-200">
+        <button class="format-btn px-2 py-1 hover:bg-white/20 rounded font-bold" data-command="bold" title="Bold (Ctrl+B)">B</button>
+        <button class="format-btn px-2 py-1 hover:bg-white/20 rounded italic font-serif" data-command="italic" title="Italic (Ctrl+I)">I</button>
+        <button class="format-btn px-2 py-1 hover:bg-white/20 rounded underline" data-command="underline" title="Underline (Ctrl+U)">U</button>
+        
+        <div class="w-px h-5 bg-gray-500 mx-1"></div> <!-- Garis pemisah -->
+        
+        <button id="inlineSizeDown" class="px-2 py-1 hover:bg-white/20 rounded font-semibold text-sm" title="Perkecil Ukuran Blok Teks">A-</button>
+        <button id="inlineSizeUp" class="px-2 py-1 hover:bg-white/20 rounded font-semibold text-sm" title="Perbesar Ukuran Blok Teks">A+</button>
+    </div>
 </body>
 </html>
