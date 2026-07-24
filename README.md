@@ -426,7 +426,7 @@ flowchart TD
 ### Langkah 1 — Clone Repository
 
 ```bash
-git clone https://github.com/<username>/khgt.git
+git clone https://github.com/rssyid/khgt.git
 cd khgt
 ```
 
@@ -484,7 +484,7 @@ GEMINI_API_KEY="AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 ```bash
 # Clone repository
-git clone https://github.com/<username>/khgt.git
+git clone https://github.com/rssyid/khgt.git
 cd khgt
 
 # Buat virtual environment

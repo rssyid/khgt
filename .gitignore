@@ -1,0 +1,55 @@
+# ========================
+# Environment Variables
+# ========================
+.env
+.env.local
+.env.*.local
+.env.production
+
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+ENV/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ========================
+# Vercel
+# ========================
+.vercel/
+
+# ========================
+# Database (jangan commit DB lokal jika ada perubahan sensitif)
+# Hapus baris ini jika ingin kalender.db ikut di-commit
+# ========================
+# api/kalender.db
+
+# ========================
+# Editor & IDE
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ========================
+# Logs
+# ========================
+*.log
+logs/
