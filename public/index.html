@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kalender Hijriah Global Tunggal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:ital,wght@0,700;1,400&display=swap" rel="stylesheet" crossorigin="anonymous">
     <!-- Library untuk screenshot/copy image -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <style>
@@ -106,14 +106,14 @@
             border-radius: clamp(0.9rem, 3.2cqw, 1.8rem);
         }
 
-        /* Teks bulan di dalam pill */
+        /* Teks bulan di dalam pill (Diperbesar 1.5x) */
         .date-month-text {
-            font-size: clamp(0.85rem, 2.67cqw, 1.5rem);
+            font-size: clamp(1.275rem, 4cqw, 2.25rem);
         }
 
-        /* Teks tahun di dalam pill */
+        /* Teks tahun di dalam pill (Diperbesar 1.5x) */
         .date-year-text {
-            font-size: clamp(0.7rem, 2.22cqw, 1.25rem);
+            font-size: clamp(1.05rem, 3.33cqw, 1.875rem);
         }
 
         /* Gap antar baris tanggal (Hijriah & Masehi) - Diperbesar 2x */
@@ -500,6 +500,17 @@
             }
         });
 
+        // Filter stylesheet CORS untuk menghindari SecurityError di konsol browser
+        const safeStylesFilter = (styleSheet) => {
+            try {
+                // Sentuh cssRules untuk cek CORS. Jika gagal, exception ditangkap dan dilewati.
+                const rules = styleSheet.cssRules;
+                return true;
+            } catch (err) {
+                return false; // Skip stylesheet yang memicu CORS error
+            }
+        };
+
         // Fitur Copy Image
         document.getElementById('copyBtn').addEventListener('click', async () => {
             const btn = document.getElementById('copyBtn');
@@ -512,6 +523,7 @@
                 const dataUrl = await htmlToImage.toPng(targetElement, { 
                     pixelRatio: 2,
                     backgroundColor: "#ffffff",
+                    styleSheetsFilter: safeStylesFilter,
                     style: { transform: 'scale(1)', transformOrigin: 'top left' }
                 });
 
@@ -551,6 +563,7 @@
                 const dataUrl = await htmlToImage.toPng(document.getElementById('captureArea'), {
                     pixelRatio: 2,
                     backgroundColor: "#ffffff",
+                    styleSheetsFilter: safeStylesFilter,
                 });
                 const a = document.createElement('a');
                 a.href = dataUrl;
@@ -578,6 +591,7 @@
                 const dataUrl = await htmlToImage.toPng(document.getElementById('captureArea'), {
                     pixelRatio: 2,
                     backgroundColor: "#ffffff",
+                    styleSheetsFilter: safeStylesFilter,
                 });
 
                 const res = await fetch(dataUrl);
