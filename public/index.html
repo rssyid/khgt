@@ -99,7 +99,7 @@
             <input type="date" id="datePicker" class="px-4 py-2 border rounded font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2c2677]">
             <button id="nextBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-semibold text-gray-700 transition">Next &rarr;</button>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 flex-wrap justify-end">
             <button id="aiBtn" class="px-4 py-2 bg-[#03a9f4] hover:bg-[#01579b] text-white rounded font-bold transition flex items-center gap-2 shadow">
                 🔍 Generate Sirah (AI)
             </button>
@@ -107,9 +107,18 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                 Cek Sumber
             </button>
+            <button id="saveImgBtn" class="px-4 py-2 bg-[#374151] hover:bg-[#1f2937] text-white rounded font-bold transition flex items-center gap-2 shadow">
+                💾 Save Image
+            </button>
+            <button id="shareWaBtn" class="px-4 py-2 bg-[#25D366] hover:bg-[#128C7E] text-white rounded font-bold transition flex items-center gap-2 shadow">
+                📲 Share WA
+            </button>
             <button id="copyBtn" class="px-5 py-2 bg-[#2c2677] hover:bg-[#1a164c] text-white rounded font-bold transition flex items-center gap-2 shadow">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
                 Copy Image
+            </button>
+            <button id="simpanTeksBtn" class="px-4 py-2 bg-[#7c3aed] hover:bg-[#5b21b6] text-white rounded font-bold transition flex items-center gap-2 shadow">
+                ☁️ Simpan Teks
             </button>
         </div>
     </div>
@@ -226,6 +235,11 @@
         async function loadDateData(dateObj) {
             const dateIso = formatDateISO(dateObj);
             document.getElementById('datePicker').value = dateIso;
+
+            // Reset konten sirah ke placeholder default setiap ganti tanggal
+            document.getElementById('uiSirahJudul').innerText = 'Judul Peristiwa';
+            document.getElementById('uiSirahKonten').innerHTML = '<p>Klik tombol AI di atas untuk menghasilkan ringkasan Sirah Nabawiyah secara otomatis sesuai tanggal hijriah.</p>';
+            document.getElementById('uiSirahSumber').innerText = '(Kitab Rujukan)';
             
             try {
                 const response = await fetch(`/api/date/${dateIso}`);
@@ -256,6 +270,24 @@
 
             } catch (error) {
                 console.warn("Data tanggal tidak ditemukan di database lokal:", dateIso);
+            }
+
+            // Muat teks sirah tersimpan dari Neon DB (jika ada, timpa placeholder)
+            loadSirahTersimpan(dateIso);
+        }
+
+        // Muat konten sirah dari Neon DB untuk tanggal tertentu
+        async function loadSirahTersimpan(dateIso) {
+            try {
+                const response = await fetch(`/api/sirah-simpan?date=${dateIso}`);
+                if (!response.ok) return; // 404 = belum ada yang disimpan, biarkan placeholder
+                const data = await response.json();
+                document.getElementById('uiSirahJudul').innerText = data.judul;
+                document.getElementById('uiSirahKonten').innerHTML = data.konten_html;
+                document.getElementById('uiSirahSumber').innerText = data.sumber;
+            } catch (e) {
+                // Gagal load = tidak perlu ditampilkan ke user, cukup log
+                console.warn("Gagal load teks tersimpan:", e);
             }
         }
 
@@ -373,6 +405,121 @@
                 console.error("Gagal memproses gambar:", error);
                 btn.innerHTML = 'Gagal!';
                 setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+            }
+        });
+
+        // ==========================================
+        // FITUR SAVE IMAGE (Download langsung)
+        // ==========================================
+        document.getElementById('saveImgBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('saveImgBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = 'Memproses...';
+            btn.disabled = true;
+
+            try {
+                const dataUrl = await htmlToImage.toPng(document.getElementById('captureArea'), {
+                    pixelRatio: 2,
+                    backgroundColor: "#ffffff",
+                });
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = `Kalender-KHGT-${formatDateISO(currentDate)}.png`;
+                a.click();
+                btn.innerHTML = '✓ Terunduh!';
+            } catch (err) {
+                console.error("Gagal save gambar:", err);
+                btn.innerHTML = '✗ Gagal!';
+            } finally {
+                setTimeout(() => { btn.innerHTML = originalHTML; btn.disabled = false; }, 2000);
+            }
+        });
+
+        // ==========================================
+        // FITUR SHARE WHATSAPP (Web Share API)
+        // ==========================================
+        document.getElementById('shareWaBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('shareWaBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = 'Memproses...';
+            btn.disabled = true;
+
+            try {
+                const dataUrl = await htmlToImage.toPng(document.getElementById('captureArea'), {
+                    pixelRatio: 2,
+                    backgroundColor: "#ffffff",
+                });
+
+                const res = await fetch(dataUrl);
+                const blob = await res.blob();
+                const fileName = `Kalender-KHGT-${formatDateISO(currentDate)}.png`;
+                const file = new File([blob], fileName, { type: 'image/png' });
+
+                // Cek dukungan Web Share API dengan file (Android/iOS)
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: `Kalender KHGT - ${formatDateISO(currentDate)}`,
+                    });
+                    btn.innerHTML = '✓ Dibagikan!';
+                } else {
+                    // Fallback desktop: download gambar, buka WA manual
+                    const a = document.createElement('a');
+                    a.href = dataUrl;
+                    a.download = fileName;
+                    a.click();
+                    btn.innerHTML = '✓ Diunduh!';
+                }
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    // User menutup share sheet, bukan error
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    return;
+                }
+                console.error("Gagal share:", err);
+                btn.innerHTML = '✗ Gagal!';
+            } finally {
+                setTimeout(() => { btn.innerHTML = originalHTML; btn.disabled = false; }, 2500);
+            }
+        });
+
+        // ==========================================
+        // FITUR SIMPAN TEKS KE NEON DB
+        // ==========================================
+        document.getElementById('simpanTeksBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('simpanTeksBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = 'Menyimpan...';
+            btn.disabled = true;
+
+            const payload = {
+                date_iso: formatDateISO(currentDate),
+                judul: document.getElementById('uiSirahJudul').innerText,
+                konten_html: document.getElementById('uiSirahKonten').innerHTML,
+                sumber: document.getElementById('uiSirahSumber').innerText,
+            };
+
+            try {
+                const response = await fetch('/api/sirah-simpan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                if (!response.ok) throw new Error("Server error");
+                btn.innerHTML = '✅ Tersimpan!';
+                btn.classList.remove('bg-[#7c3aed]', 'hover:bg-[#5b21b6]');
+                btn.classList.add('bg-green-600');
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    btn.classList.add('bg-[#7c3aed]', 'hover:bg-[#5b21b6]');
+                    btn.classList.remove('bg-green-600');
+                }, 2500);
+            } catch (err) {
+                console.error("Gagal simpan:", err);
+                btn.innerHTML = '❌ Gagal!';
+                setTimeout(() => { btn.innerHTML = originalHTML; btn.disabled = false; }, 2000);
             }
         });
 

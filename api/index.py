@@ -6,6 +6,9 @@ import urllib.request
 import urllib.error
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 app = FastAPI()
 app.add_middleware(
@@ -17,11 +20,40 @@ app.add_middleware(
 )
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "kalender.db")
+NEON_URL = os.environ.get("DATABASE_URL")
+
+# Flag agar CREATE TABLE hanya dijalankan sekali per instance serverless
+_sirah_table_ready = False
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+def get_neon_connection():
+    if not NEON_URL:
+        raise HTTPException(status_code=500, detail="DATABASE_URL belum disetel di Vercel")
+    return psycopg2.connect(NEON_URL)
+
+def ensure_sirah_table():
+    global _sirah_table_ready
+    if _sirah_table_ready:
+        return
+    conn = get_neon_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS sirah_edits (
+            date_iso TEXT PRIMARY KEY,
+            judul TEXT,
+            konten_html TEXT,
+            sumber TEXT,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    cur.close()
+    conn.close()
+    _sirah_table_ready = True
 
 @app.get("/api/date/{date_iso}")
 def get_by_gregorian(date_iso: str):
@@ -33,6 +65,62 @@ def get_by_gregorian(date_iso: str):
     if not row:
         raise HTTPException(status_code=404, detail="Data tanggal tidak ditemukan")
     return dict(row)
+
+# =============================================
+# ENDPOINT SIMPAN & MUAT TEKS SIRAH (NEON DB)
+# =============================================
+
+class SirahEdit(BaseModel):
+    date_iso: str
+    judul: str
+    konten_html: str
+    sumber: str
+
+@app.post("/api/sirah-simpan")
+def simpan_sirah(data: SirahEdit):
+    """Simpan atau update konten sirah untuk satu tanggal ke Neon PostgreSQL."""
+    ensure_sirah_table()
+    try:
+        conn = get_neon_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO sirah_edits (date_iso, judul, konten_html, sumber, updated_at)
+            VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
+            ON CONFLICT (date_iso) DO UPDATE
+            SET judul        = EXCLUDED.judul,
+                konten_html  = EXCLUDED.konten_html,
+                sumber       = EXCLUDED.sumber,
+                updated_at   = CURRENT_TIMESTAMP
+        """, (data.date_iso, data.judul, data.konten_html, data.sumber))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"success": True, "date_iso": data.date_iso}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal menyimpan ke database: {str(e)}")
+
+@app.get("/api/sirah-simpan")
+def load_sirah_tersimpan(date: str):
+    """Muat konten sirah tersimpan untuk satu tanggal dari Neon PostgreSQL."""
+    ensure_sirah_table()
+    try:
+        conn = get_neon_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT * FROM sirah_edits WHERE date_iso = %s", (date,))
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+        if not row:
+            raise HTTPException(status_code=404, detail="Tidak ada data tersimpan untuk tanggal ini")
+        return dict(row)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal memuat dari database: {str(e)}")
+
+# =============================================
+# ENDPOINT AI SIRAH (GEMINI)
+# =============================================
 
 # 🌟 Daftar model fallback, urut dari yang paling diutamakan ke cadangan
 MODEL_FALLBACK_LIST = [
