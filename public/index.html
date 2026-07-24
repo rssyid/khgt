@@ -19,8 +19,13 @@
             margin: 0;
             padding: 1rem;
         }
-        
-        /* Kotak Kanvas Utama dengan Outline & Sudut Melengkung */
+
+        /* ============================================================
+           KANVAS UTAMA
+           - padding & border skala dengan viewport (vw + clamp)
+           - container-type: inline-size → anak pakai unit cqw
+             (cqw = % lebar canvas, bukan viewport)
+           ============================================================ */
         .square-wrapper {
             width: 100%;
             max-width: 900px;
@@ -31,14 +36,17 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-            padding: 2rem 3rem;
-            
-            /* --- KODE BORDER GANDA --- */
-            border: 10px solid #003F72;        /* Garis border bagian dalam */
-            outline: 4px solid #003F72;       /* Garis outline bagian luar */
-            outline-offset: -8px;             /* Memberikan jarak renggang antar garis */
-            
-            /* border-radius: 1.5rem;         /* Opsional: biarkan mati jika ingin sudut siku-siku tegas */
+
+            /* Padding proporsional: ~3rem di 900px, ~1rem di 375px */
+            padding: clamp(0.75rem, 3.5vw, 2rem) clamp(1rem, 5.3vw, 3rem);
+
+            /* Aktifkan Container Query agar elemen anak bisa pakai cqw */
+            container-type: inline-size;
+
+            /* Border ganda yang skala proporsional */
+            border: clamp(4px, 1.05vw, 10px) solid #003F72;
+            outline: clamp(1.5px, 0.42vw, 4px) solid #003F72;
+            outline-offset: clamp(-8px, -0.84vw, -3px);
         }
 
         .watermark {
@@ -54,9 +62,98 @@
             object-fit: contain;
         }
 
-        .title-text { font-size: clamp(1.495rem, 4.16vw, 2.6rem); line-height: 1.15; letter-spacing: -0.01em; }
-        .day-text { font-size: clamp(2.875rem, 6.875vw, 5rem); letter-spacing: -0.03em; }
-        
+        /* ============================================================
+           SISTEM TIPOGRAFI RESPONSIF (Container Query — unit cqw)
+           Semua ukuran di bawah ini proporsional terhadap lebar canvas
+           ============================================================ */
+
+        /* Nama hari besar (SENIN, SELASA, …) */
+        .day-text {
+            font-size: clamp(2rem, 7cqw, 5rem);
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+
+        /* Subtitle & akronim di header */
+        .canvas-title-sub {
+            display: block;
+            font-size: clamp(0.65rem, 1.5cqw, 1.125rem);
+            letter-spacing: 0.2em;
+        }
+        .canvas-title-acr {
+            font-size: clamp(1.1rem, 2.8cqw, 2.25rem);
+            letter-spacing: 0.1em;
+        }
+
+        /* Badge nama event / hari khusus */
+        .canvas-event-text {
+            font-size: clamp(0.6rem, 1.1cqw, 1rem);
+        }
+
+        /* Pill pembungkus tanggal (Hijriah / Masehi) */
+        .date-pill {
+            border-radius: clamp(1.2rem, 2.5cqw, 2.5rem);
+            padding: clamp(0.3rem, 0.6cqw, 0.625rem);
+        }
+
+        /* Kotak angka tanggal di dalam pill */
+        .date-num-box {
+            font-size: clamp(1.3rem, 3.5cqw, 3rem);
+            height: clamp(3rem, 7cqw, 5rem);
+            width: clamp(3.5rem, 7.5cqw, 7rem);
+            border-radius: clamp(0.8rem, 1.8cqw, 1.8rem);
+        }
+
+        /* Teks bulan di dalam pill */
+        .date-month-text {
+            font-size: clamp(0.85rem, 2.1cqw, 1.5rem);
+        }
+
+        /* Teks tahun di dalam pill */
+        .date-year-text {
+            font-size: clamp(0.7rem, 1.7cqw, 1.25rem);
+        }
+
+        /* Gap antar baris tanggal (Hijriah & Masehi) */
+        .date-rows-gap {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.35rem, 0.8cqw, 0.625rem);
+        }
+
+        /* Card sirah */
+        .sirah-card {
+            background-color: rgba(255, 255, 255, 0.65);
+            padding: clamp(0.6rem, 1.5cqw, 1.25rem) clamp(0.75rem, 2cqw, 2rem);
+            border-radius: clamp(0.6rem, 1.2cqw, 1.25rem);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            width: 88%;
+            box-sizing: border-box;
+            border: 1.5px solid rgba(6, 95, 70, 0.2);
+        }
+
+        /* Badge "Sirah Nabawiyah" */
+        .sirah-badge-text {
+            font-size: clamp(0.6rem, 1.1cqw, 1rem);
+            padding: 0.2em clamp(0.5rem, 1cqw, 0.875rem);
+        }
+
+        /* Judul peristiwa sirah */
+        .sirah-judul-text {
+            font-size: clamp(0.9rem, 2.3cqw, 1.875rem);
+        }
+
+        /* Isi konten sirah */
+        .sirah-konten-text {
+            font-size: clamp(0.65rem, 1.35cqw, 1.125rem);
+        }
+
+        /* Sumber / kitab rujukan */
+        .sirah-sumber-text {
+            font-size: clamp(0.55rem, 1cqw, 1rem);
+        }
+
+        /* Font Amiri untuk judul sirah */
         .sirah-title-font {
             font-family: 'Amiri', serif;
         }
@@ -65,18 +162,6 @@
         [contenteditable="true"] b { font-weight: bold; }
         [contenteditable="true"] i { font-style: italic; }
         [contenteditable="true"] u { text-decoration: underline; }
-
-        /* Card Kotak Teks Sirah dengan Outline Tipis */
-        .sirah-card {
-            background-color: rgba(255, 255, 255, 0.65);
-            padding: 1.25rem 2rem;
-            border-radius: 1.25rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
-            width: 88%;
-            box-sizing: border-box;
-            /* --- TAMBAHAN OUTLINE / BORDER PROFESIONAL --- */
-            border: 1.5px solid rgba(6, 95, 70, 0.2); /* Garis bingkai hijau emerald tipis */
-        }
 
         [contenteditable="true"]:hover {
             background-color: rgba(0,0,0,0.03);
@@ -88,18 +173,34 @@
             background-color: rgba(0,0,0,0.01);
             border-radius: 6px;
         }
+
+        /* ============================================================
+           TOOLBAR RESPONSIF
+           Di layar sangat kecil (< 480px), tombol diperkecil
+           ============================================================ */
+        @media (max-width: 480px) {
+            #toolbar-nav button,
+            #toolbar-actions button {
+                padding: 0.35rem 0.6rem;
+                font-size: 0.78rem;
+            }
+            #toolbar-nav input[type="date"] {
+                padding: 0.35rem 0.5rem;
+                font-size: 0.78rem;
+            }
+        }
     </style>
 </head>
 <body>
 
     <!-- KONTROL NAVIGASI (Di luar canvas) -->
-    <div class="w-full max-w-[900px] bg-white rounded-xl shadow-md p-4 mb-6 flex flex-wrap gap-4 justify-between items-center">
-        <div class="flex gap-2">
+    <div id="toolbar" class="w-full max-w-[900px] bg-white rounded-xl shadow-md p-4 mb-6 flex flex-wrap gap-4 justify-between items-center">
+        <div id="toolbar-nav" class="flex gap-2">
             <button id="prevBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-semibold text-gray-700 transition">&larr; Prev</button>
             <input type="date" id="datePicker" class="px-4 py-2 border rounded font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2c2677]">
             <button id="nextBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-semibold text-gray-700 transition">Next &rarr;</button>
         </div>
-        <div class="flex gap-2 flex-wrap justify-end">
+        <div id="toolbar-actions" class="flex gap-2 flex-wrap justify-end">
             <button id="aiBtn" class="px-4 py-2 bg-[#03a9f4] hover:bg-[#01579b] text-white rounded font-bold transition flex items-center gap-2 shadow">
                 🔍 Generate Sirah (AI)
             </button>
@@ -129,9 +230,9 @@
 
         <!-- Bagian Judul -->
         <div class="relative z-10 flex-none text-center pt-1">
-            <h1 class="title-text font-extrabold text-gray-800 uppercase tracking-tight">
-                <span class="block text-xl sm:text-base md:text-lg font-semibold tracking-widest text-[#2c2677] mb-0.5">Kalender Hijriah Global Tunggal</span>
-                <span class="text-2xl sm:text-3xl md:text-4xl font-black text-[#2c2677] tracking-wider">(KHGT)</span>
+            <h1 class="font-extrabold text-gray-800 uppercase" style="line-height:1.15;">
+                <span class="canvas-title-sub font-semibold text-[#2c2677] mb-0.5">Kalender Hijriah Global Tunggal</span>
+                <span class="canvas-title-acr font-black text-[#2c2677]">(KHGT)</span>
             </h1>
         </div>
 
@@ -141,55 +242,55 @@
             
             <!-- Wadah Event Dinamis (Muncul jika ada event di database) -->
             <div id="uiEventWrapper" class="mb-2 hidden">
-                <span id="uiEventName" class="block text-xs sm:text-sm md:text-base font-semibold tracking-widest text-[#2c2677] px-3 py-0.5 bg-[#b3b6d4]/10 rounded-full"></span>
+                <span id="uiEventName" class="canvas-event-text block font-semibold tracking-widest text-[#2c2677] px-3 py-0.5 bg-[#b3b6d4]/10 rounded-full"></span>
             </div>
             
             <!-- Wadah Kotak Tanggal -->
-            <div class="w-full max-w-[75%] space-y-2.5">
+            <div class="w-full max-w-[75%] date-rows-gap">
                 <!-- Tanggal Hijriah -->
-                <div class="bg-[#b3b6d4] rounded-[2.5rem] flex items-center p-2 sm:p-2.5 shadow-md border border-white/50">
-                    <div id="uiTglHijri" class="bg-white text-black font-black text-3xl sm:text-5xl rounded-[1.8rem] h-16 w-20 sm:h-20 sm:w-28 flex items-center justify-center flex-none relative overflow-hidden">-</div>
-                    <div class="flex-grow text-center text-white text-xl sm:text-2xl font-bold tracking-[0.15em] uppercase">
-                        <span id="uiBulanHijri">-</span> <span id="uiTahunHijri" class="opacity-90 text-lg sm:text-xl">-</span>
+                <div class="bg-[#b3b6d4] date-pill flex items-center shadow-md border border-white/50">
+                    <div id="uiTglHijri" class="bg-white text-black font-black date-num-box flex items-center justify-center flex-none relative overflow-hidden">-</div>
+                    <div class="flex-grow text-center text-white font-bold tracking-[0.15em] uppercase">
+                        <span id="uiBulanHijri" class="date-month-text">-</span> <span id="uiTahunHijri" class="opacity-90 date-year-text">-</span>
                     </div>
                 </div>
 
                 <!-- Tanggal Masehi -->
-                <div class="bg-[#2c2677] rounded-[2.5rem] flex items-center p-2 sm:p-2.5 shadow-lg">
-                    <div id="uiTglMasehi" class="bg-white text-black font-black text-3xl sm:text-5xl rounded-[1.8rem] h-16 w-20 sm:h-20 sm:w-28 flex items-center justify-center flex-none relative overflow-hidden">-</div>
-                    <div class="flex-grow text-center text-white text-xl sm:text-2xl font-bold tracking-[0.15em] uppercase">
-                        <span id="uiBulanMasehi">-</span> <span id="uiTahunMasehi" class="opacity-90 text-lg sm:text-xl">-</span>
+                <div class="bg-[#2c2677] date-pill flex items-center shadow-lg">
+                    <div id="uiTglMasehi" class="bg-white text-black font-black date-num-box flex items-center justify-center flex-none relative overflow-hidden">-</div>
+                    <div class="flex-grow text-center text-white font-bold tracking-[0.15em] uppercase">
+                        <span id="uiBulanMasehi" class="date-month-text">-</span> <span id="uiTahunMasehi" class="opacity-90 date-year-text">-</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Bagian Sirah Nabawiyah (Font diperbesar 1.2x) -->
-        <div class="relative z-10 flex-grow flex flex-col items-center text-center mt-5 px-2 justify-start">
+        <!-- Bagian Sirah Nabawiyah -->
+        <div class="relative z-10 flex-grow flex flex-col items-center text-center mt-[clamp(0.75rem,1.5cqw,1.25rem)] px-2 justify-start">
             <div class="sirah-card flex flex-col items-center">
-                
+
                 <!-- Badge Kategori -->
-                <div class="mb-1.5">
-                    <span class="bg-[#b3b6d4]/10 text-[#2c2677] px-3.5 py-0.5 rounded-full text-sm sm:text-base font-bold tracking-widest uppercase whitespace-nowrap">
+                <div class="mb-[clamp(0.25rem,0.6cqw,0.375rem)]">
+                    <span class="sirah-badge-text bg-[#b3b6d4]/10 text-[#2c2677] rounded-full font-bold tracking-widest uppercase whitespace-nowrap">
                         Sirah Nabawiyah
                     </span>
                 </div>
 
-                <!-- Judul Peristiwa (Sebelumnya text-lg sm:text-xl md:text-2xl -> Menjadi text-xl sm:text-2xl md:text-3xl) -->
-                <div class="mb-1.5 w-full">
-                    <h4 id="uiSirahJudul" contenteditable="true" class="sirah-title-font text-[#1e293b] text-xl sm:text-2xl md:text-3xl font-bold leading-tight">
+                <!-- Judul Peristiwa -->
+                <div class="mb-[clamp(0.25rem,0.6cqw,0.375rem)] w-full">
+                    <h4 id="uiSirahJudul" contenteditable="true" class="sirah-title-font sirah-judul-text text-[#1e293b] font-bold leading-tight">
                         Judul Peristiwa
                     </h4>
                 </div>
 
-                <!-- Isi Konten (Sebelumnya text-xs sm:text-sm md:text-base -> Menjadi text-sm sm:text-base md:text-lg) -->
-                <div id="uiSirahKonten" contenteditable="true" class="text-[#334155] text-sm sm:text-base md:text-lg leading-relaxed font-normal w-full">
+                <!-- Isi Konten -->
+                <div id="uiSirahKonten" contenteditable="true" class="sirah-konten-text text-[#334155] leading-relaxed font-normal w-full">
                     <p>Klik tombol AI di atas untuk menghasilkan ringkasan Sirah Nabawiyah secara otomatis sesuai tanggal hijriah.</p>
                 </div>
-                
-                <!-- Sumber / Kitab Rujukan (Sebelumnya text-[11px] sm:text-xs md:text-sm -> Menjadi text-xs sm:text-sm md:text-base) -->
-                <div class="mt-2.5 pt-2 border-t border-gray-200/80 w-full">
-                    <p id="uiSirahSumber" contenteditable="true" class="text-[#b45309] text-xs sm:text-sm md:text-base font-medium italic">
+
+                <!-- Sumber / Kitab Rujukan -->
+                <div class="mt-[clamp(0.35rem,0.8cqw,0.625rem)] pt-[clamp(0.25rem,0.6cqw,0.5rem)] border-t border-gray-200/80 w-full">
+                    <p id="uiSirahSumber" contenteditable="true" class="sirah-sumber-text text-[#b45309] font-medium italic">
                         (Kitab Rujukan)
                     </p>
                 </div>
