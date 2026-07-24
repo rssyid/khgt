@@ -189,6 +189,18 @@
         </div>
     </div>
 
+    <!-- INLINE FLOATING TOOLBAR -->
+    <div id="inlineToolbar" class="absolute z-50 hidden bg-[#1e293b] text-white shadow-xl rounded-lg px-2 py-1 flex items-center gap-1 transition-opacity duration-200">
+        <button class="format-btn px-2 py-1 hover:bg-white/20 rounded font-bold" data-command="bold" title="Bold (Ctrl+B)">B</button>
+        <button class="format-btn px-2 py-1 hover:bg-white/20 rounded italic font-serif" data-command="italic" title="Italic (Ctrl+I)">I</button>
+        <button class="format-btn px-2 py-1 hover:bg-white/20 rounded underline" data-command="underline" title="Underline (Ctrl+U)">U</button>
+        
+        <div class="w-px h-5 bg-gray-500 mx-1"></div> <!-- Garis pemisah -->
+        
+        <button id="inlineSizeDown" class="px-2 py-1 hover:bg-white/20 rounded font-semibold text-sm" title="Perkecil Ukuran Blok Teks">A-</button>
+        <button id="inlineSizeUp" class="px-2 py-1 hover:bg-white/20 rounded font-semibold text-sm" title="Perbesar Ukuran Blok Teks">A+</button>
+    </div>
+
     <!-- LOADING OVERLAY AI -->
     <div id="aiLoadingOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center text-white">
         <div class="bg-white text-[#2c2677] p-6 rounded-2xl shadow-2xl flex flex-col items-center space-y-4 max-w-sm text-center">
@@ -466,16 +478,6 @@
         
     </script>
 
-<!-- INLINE FLOATING TOOLBAR -->
-    <div id="inlineToolbar" class="absolute z-50 hidden bg-[#1e293b] text-white shadow-xl rounded-lg px-2 py-1 flex items-center gap-1 transition-opacity duration-200">
-        <button class="format-btn px-2 py-1 hover:bg-white/20 rounded font-bold" data-command="bold" title="Bold (Ctrl+B)">B</button>
-        <button class="format-btn px-2 py-1 hover:bg-white/20 rounded italic font-serif" data-command="italic" title="Italic (Ctrl+I)">I</button>
-        <button class="format-btn px-2 py-1 hover:bg-white/20 rounded underline" data-command="underline" title="Underline (Ctrl+U)">U</button>
-        
-        <div class="w-px h-5 bg-gray-500 mx-1"></div> <!-- Garis pemisah -->
-        
-        <button id="inlineSizeDown" class="px-2 py-1 hover:bg-white/20 rounded font-semibold text-sm" title="Perkecil Ukuran Blok Teks">A-</button>
-        <button id="inlineSizeUp" class="px-2 py-1 hover:bg-white/20 rounded font-semibold text-sm" title="Perbesar Ukuran Blok Teks">A+</button>
-    </div>
+
 </body>
 </html>
