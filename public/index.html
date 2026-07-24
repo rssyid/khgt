@@ -67,9 +67,9 @@
            Semua ukuran di bawah ini proporsional terhadap lebar canvas
            ============================================================ */
 
-        /* Nama hari besar (SENIN, SELASA, …) */
+        /* Nama hari besar (SENIN, SELASA, …) (Diperbesar 1.3x) */
         .day-text {
-            font-size: clamp(2.2rem, 8.88cqw, 5rem);
+            font-size: clamp(2.86rem, 11.54cqw, 6.5rem);
             letter-spacing: -0.03em;
             line-height: 1;
             /* Tambah space 2x di bawah hari */
@@ -217,16 +217,16 @@
             
             <!-- Kelompok AI & Simpan Teks -->
             <div class="flex gap-2 items-center flex-wrap flex-grow sm:flex-grow-0 justify-end">
-                <button id="aiBtn" class="flex items-center justify-center gap-2 h-11 px-4 bg-[#03a9f4] hover:bg-[#0288d1] text-white rounded-xl font-bold text-sm shadow-sm">
-                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <button id="aiBtn" class="flex items-center justify-center gap-2 h-11 px-4 bg-[#03a9f4] hover:bg-[#0288d1] text-white rounded-xl font-bold text-sm shadow-sm whitespace-nowrap">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     Generate Sirah (AI)
                 </button>
-                <button id="simpanTeksBtn" class="flex items-center justify-center gap-2 h-11 px-4 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl font-bold text-sm shadow-sm">
-                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                <button id="simpanTeksBtn" class="flex items-center justify-center gap-2 h-11 px-4 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl font-bold text-sm shadow-sm whitespace-nowrap">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
                     Simpan Teks
                 </button>
-                <button id="cekSumberBtn" class="flex items-center justify-center gap-1.5 h-11 px-4 bg-[#065f46] hover:bg-[#047857] text-white rounded-xl font-bold text-sm shadow-sm hidden">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                <button id="cekSumberBtn" class="flex items-center justify-center gap-1.5 h-11 px-4 bg-[#065f46] hover:bg-[#047857] text-white rounded-xl font-bold text-sm shadow-sm whitespace-nowrap hidden">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                     Cek Sumber
                 </button>
             </div>
@@ -238,16 +238,16 @@
         <!-- Baris 2: Ekspor Gambar (Copy, Save, Share) -->
         <div class="flex flex-wrap gap-2.5 justify-center sm:justify-end items-center w-full">
             <span class="text-xs text-gray-400 font-bold uppercase tracking-wider mr-auto hidden sm:inline-block">Ekspor Gambar:</span>
-            <button id="copyBtn" class="flex items-center justify-center gap-2 h-11 px-5 bg-[#2c2677] hover:bg-[#201b58] text-white rounded-xl font-bold text-sm shadow-sm">
-                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+            <button id="copyBtn" class="flex items-center justify-center gap-2 h-11 px-5 bg-[#2c2677] hover:bg-[#201b58] text-white rounded-xl font-bold text-sm shadow-sm whitespace-nowrap">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
                 Copy Image
             </button>
-            <button id="saveImgBtn" class="flex items-center justify-center gap-2 h-11 px-5 bg-[#4b5563] hover:bg-[#374151] text-white rounded-xl font-bold text-sm shadow-sm">
-                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <button id="saveImgBtn" class="flex items-center justify-center gap-2 h-11 px-5 bg-[#4b5563] hover:bg-[#374151] text-white rounded-xl font-bold text-sm shadow-sm whitespace-nowrap">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 Save Image
             </button>
-            <button id="shareWaBtn" class="flex items-center justify-center gap-2 h-11 px-5 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-xl font-bold text-sm shadow-sm">
-                <svg class="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.45L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.623-1.023-5.09-2.885-6.948C16.59 2.007 14.1 1.01 11.477 1.01c-5.447 0-9.875 4.372-9.88 9.802-.001 1.73.473 3.41 1.37 4.908l-.997 3.639 3.754-.975zm13.11-7.147c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+            <button id="shareWaBtn" class="flex items-center justify-center gap-2 h-11 px-5 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-xl font-bold text-sm shadow-sm whitespace-nowrap">
+                <svg class="w-5 h-5 flex-shrink-0 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.45L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.623-1.023-5.09-2.885-6.948C16.59 2.007 14.1 1.01 11.477 1.01c-5.447 0-9.875 4.372-9.88 9.802-.001 1.73.473 3.41 1.37 4.908l-.997 3.639 3.754-.975zm13.11-7.147c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
                 Share WA
             </button>
         </div>
