@@ -145,10 +145,9 @@ def load_sirah_tersimpan(date: str):
         row = cur.fetchone()
         cur.close()
         if not row:
-            raise HTTPException(status_code=404, detail="Tidak ada data tersimpan untuk tanggal ini")
-        return dict(row)
-    except HTTPException:
-        raise
+            # Kembalikan 200 dengan exists:false agar browser tidak log error 404
+            return {"exists": False}
+        return {"exists": True, **dict(row)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal memuat dari database: {str(e)}")
 

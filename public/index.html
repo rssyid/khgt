@@ -433,14 +433,16 @@
                 const data = await response.json();
                 
                 // Fetch data teks sirah tersimpan dari Neon DB
+                // API selalu return 200: { exists: false } jika belum ada → tidak ada error di console
                 let savedData = null;
                 try {
                     const saveRes = await fetch(`/api/sirah-simpan?date=${dateIso}`);
-                    if (saveRes.ok) {
-                        savedData = await saveRes.json();
+                    const saveJson = await saveRes.json();
+                    if (saveJson.exists) {
+                        savedData = saveJson;
                     }
                 } catch (e) {
-                    console.warn("Gagal load teks tersimpan dari Neon DB:", e);
+                    // Hanya log jika benar-benar error jaringan, bukan "tidak ada data"
                 }
 
                 // Setelah data siap, jalankan animasi memudar secara serempak
