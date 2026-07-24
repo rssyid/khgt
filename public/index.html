@@ -298,9 +298,9 @@
         <div class="relative z-10 flex-grow flex flex-col items-center text-center mt-[clamp(1rem,2.22cqw,1.5rem)] px-2 justify-start">
             <div class="sirah-card flex flex-col items-center">
 
-                <!-- Badge Kategori -->
+                <!-- Badge Kategori (Editable) -->
                 <div class="mb-[clamp(0.35rem,1cqw,0.6rem)]">
-                    <span class="sirah-badge-text bg-[#b3b6d4]/10 text-[#2c2677] rounded-full font-bold tracking-widest uppercase whitespace-nowrap">
+                    <span id="uiSirahKategori" contenteditable="true" class="sirah-badge-text bg-[#b3b6d4]/10 text-[#2c2677] rounded-full font-bold tracking-widest uppercase whitespace-nowrap">
                         Sirah Nabawiyah
                     </span>
                 </div>
@@ -367,6 +367,7 @@
             document.getElementById('datePicker').value = dateIso;
 
             // Reset konten sirah ke placeholder default setiap ganti tanggal
+            document.getElementById('uiSirahKategori').innerText = 'Sirah Nabawiyah';
             document.getElementById('uiSirahJudul').innerText = 'Judul Peristiwa';
             document.getElementById('uiSirahKonten').innerHTML = '<p>Klik tombol AI di atas untuk menghasilkan ringkasan Sirah Nabawiyah secara otomatis sesuai tanggal hijriah.</p>';
             document.getElementById('uiSirahSumber').innerText = '(Kitab Rujukan)';
@@ -412,6 +413,7 @@
                 const response = await fetch(`/api/sirah-simpan?date=${dateIso}`);
                 if (!response.ok) return; // 404 = belum ada yang disimpan, biarkan placeholder
                 const data = await response.json();
+                document.getElementById('uiSirahKategori').innerText = data.kategori || "Sirah Nabawiyah";
                 document.getElementById('uiSirahJudul').innerText = data.judul;
                 document.getElementById('uiSirahKonten').innerHTML = data.konten_html;
                 document.getElementById('uiSirahSumber').innerText = data.sumber;
@@ -471,6 +473,7 @@
                 }
                 
                 const data = await response.json();
+                document.getElementById('uiSirahKategori').innerText = "Sirah Nabawiyah"; // Reset ke default
                 document.getElementById('uiSirahJudul').innerText = data.Judul;
                 document.getElementById('uiSirahKonten').innerHTML = `<p>${data.kontent}</p>`;
                 document.getElementById('uiSirahSumber').innerText = `(${data.sumber})`;
@@ -482,6 +485,9 @@
                 } else {
                     cekSumberBtn.classList.add('hidden');
                 }
+                
+                // Otomatis simpan hasil generate AI ke Neon DB
+                autoSaveTeks();
                 
             } catch (error) {
                 console.error("AI Error:", error);
@@ -629,19 +635,31 @@
         });
 
         // ==========================================
-        // FITUR SIMPAN TEKS KE NEON DB
+        // FITUR SIMPAN TEKS KE NEON DB (Auto-Save & Manual)
         // ==========================================
-        document.getElementById('simpanTeksBtn').addEventListener('click', async () => {
+        let autoSaveTimeout = null;
+
+        function triggerAutoSave() {
             const btn = document.getElementById('simpanTeksBtn');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = 'Menyimpan...';
+            btn.innerHTML = `<svg class="w-5 h-5 flex-shrink-0 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 3v3h-3"></path></svg> Menunggu...`;
+            
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                autoSaveTeks();
+            }, 1500); // Otomatis simpan jika berhenti mengetik selama 1.5 detik
+        }
+
+        async function autoSaveTeks() {
+            const btn = document.getElementById('simpanTeksBtn');
+            btn.innerHTML = `<svg class="w-5 h-5 flex-shrink-0 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 3v3h-3"></path></svg> Menyimpan...`;
             btn.disabled = true;
 
             const payload = {
                 date_iso: formatDateISO(currentDate),
-                judul: document.getElementById('uiSirahJudul').innerText,
+                kategori: document.getElementById('uiSirahKategori').innerText.trim(),
+                judul: document.getElementById('uiSirahJudul').innerText.trim(),
                 konten_html: document.getElementById('uiSirahKonten').innerHTML,
-                sumber: document.getElementById('uiSirahSumber').innerText,
+                sumber: document.getElementById('uiSirahSumber').innerText.trim(),
             };
 
             try {
@@ -651,19 +669,59 @@
                     body: JSON.stringify(payload),
                 });
                 if (!response.ok) throw new Error("Server error");
-                btn.innerHTML = '✅ Tersimpan!';
+                
+                btn.innerHTML = `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Tersimpan!`;
                 btn.classList.remove('bg-[#7c3aed]', 'hover:bg-[#5b21b6]');
                 btn.classList.add('bg-green-600');
+                
                 setTimeout(() => {
-                    btn.innerHTML = originalHTML;
-                    btn.disabled = false;
-                    btn.classList.add('bg-[#7c3aed]', 'hover:bg-[#5b21b6]');
+                    btn.innerHTML = `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> Simpan Teks`;
+                    btn.classList.add('bg-[#7c3aed]', 'hover:bg-[#6d28d9]');
                     btn.classList.remove('bg-green-600');
-                }, 2500);
+                    btn.disabled = false;
+                }, 2000);
             } catch (err) {
                 console.error("Gagal simpan:", err);
                 btn.innerHTML = '❌ Gagal!';
-                setTimeout(() => { btn.innerHTML = originalHTML; btn.disabled = false; }, 2000);
+                setTimeout(() => {
+                    btn.innerHTML = `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> Simpan Teks`;
+                    btn.disabled = false;
+                }, 2000);
+            }
+        }
+
+        // Trigger manual saat tombol diklik
+        document.getElementById('simpanTeksBtn').addEventListener('click', () => {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTeks();
+        });
+
+        // Pasang event listener input ke semua kolom editable untuk auto-save
+        ['uiSirahKategori', 'uiSirahJudul', 'uiSirahKonten', 'uiSirahSumber'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', triggerAutoSave);
+            }
+        });
+
+        // ==========================================
+        // FITUR PINTASAN KEYBOARD (Arrow Navigation)
+        // ==========================================
+        document.addEventListener('keydown', (e) => {
+            // Jangan jalankan pintasan jika user sedang fokus mengetik di input/textarea atau contenteditable
+            const activeEl = document.activeElement;
+            if (activeEl && (
+                activeEl.tagName === 'INPUT' || 
+                activeEl.tagName === 'TEXTAREA' || 
+                activeEl.isContentEditable
+            )) {
+                return;
+            }
+
+            if (e.key === 'ArrowLeft') {
+                document.getElementById('prevBtn').click();
+            } else if (e.key === 'ArrowRight') {
+                document.getElementById('nextBtn').click();
             }
         });
 

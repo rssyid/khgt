@@ -4,7 +4,7 @@ import json
 import traceback
 import urllib.request
 import urllib.error
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import psycopg2
@@ -22,7 +22,10 @@ app.add_middleware(
 DB_PATH = os.path.join(os.path.dirname(__file__), "kalender.db")
 NEON_URL = os.environ.get("DATABASE_URL")
 
-# Flag agar CREATE TABLE hanya dijalankan sekali per instance serverless
+# ============================================================
+# OPTIMASI KINERJA: RE-USE KONEKSI NEON (Warm Starts)
+# ============================================================
+_db_conn = None
 _sirah_table_ready = False
 
 def get_db_connection():
@@ -31,9 +34,14 @@ def get_db_connection():
     return conn
 
 def get_neon_connection():
+    global _db_conn
     if not NEON_URL:
         raise HTTPException(status_code=500, detail="DATABASE_URL belum disetel di Vercel")
-    return psycopg2.connect(NEON_URL)
+    
+    # Periksa apakah koneksi sudah ada dan masih terbuka (.closed == 0 artinya open)
+    if _db_conn is None or _db_conn.closed != 0:
+        _db_conn = psycopg2.connect(NEON_URL)
+    return _db_conn
 
 def ensure_sirah_table():
     global _sirah_table_ready
@@ -41,22 +49,34 @@ def ensure_sirah_table():
         return
     conn = get_neon_connection()
     cur = conn.cursor()
+    
+    # Buat tabel utama jika belum ada
     cur.execute("""
         CREATE TABLE IF NOT EXISTS sirah_edits (
             date_iso TEXT PRIMARY KEY,
+            kategori TEXT DEFAULT 'Sirah Nabawiyah',
             judul TEXT,
             konten_html TEXT,
             sumber TEXT,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+    
+    # Pastikan kolom 'kategori' ada jika tabel sudah pernah dibuat sebelumnya
+    cur.execute("ALTER TABLE sirah_edits ADD COLUMN IF NOT EXISTS kategori TEXT DEFAULT 'Sirah Nabawiyah'")
+    
     conn.commit()
     cur.close()
-    conn.close()
     _sirah_table_ready = True
 
+# ============================================================
+# ENDPOINT TANGGAL (Dengan Cache-Control 1 Tahun)
+# ============================================================
 @app.get("/api/date/{date_iso}")
-def get_by_gregorian(date_iso: str):
+def get_by_gregorian(date_iso: str, response: Response):
+    # Optimasi Caching: Data kalender bersifat statis, berikan instruksi cache 1 tahun
+    response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM kalender_harian WHERE gregorian_date_iso = ?", (date_iso,))
@@ -72,6 +92,7 @@ def get_by_gregorian(date_iso: str):
 
 class SirahEdit(BaseModel):
     date_iso: str
+    kategori: str = "Sirah Nabawiyah"
     judul: str
     konten_html: str
     sumber: str
@@ -84,17 +105,18 @@ def simpan_sirah(data: SirahEdit):
         conn = get_neon_connection()
         cur = conn.cursor()
         cur.execute("""
-            INSERT INTO sirah_edits (date_iso, judul, konten_html, sumber, updated_at)
-            VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
+            INSERT INTO sirah_edits (date_iso, kategori, judul, konten_html, sumber, updated_at)
+            VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
             ON CONFLICT (date_iso) DO UPDATE
-            SET judul        = EXCLUDED.judul,
+            SET kategori     = EXCLUDED.kategori,
+                judul        = EXCLUDED.judul,
                 konten_html  = EXCLUDED.konten_html,
                 sumber       = EXCLUDED.sumber,
                 updated_at   = CURRENT_TIMESTAMP
-        """, (data.date_iso, data.judul, data.konten_html, data.sumber))
+        """, (data.date_iso, data.kategori, data.judul, data.konten_html, data.sumber))
         conn.commit()
         cur.close()
-        conn.close()
+        # CATATAN: Jangan panggil conn.close() agar koneksi bisa dipakai ulang di request berikutnya!
         return {"success": True, "date_iso": data.date_iso}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal menyimpan ke database: {str(e)}")
@@ -109,7 +131,6 @@ def load_sirah_tersimpan(date: str):
         cur.execute("SELECT * FROM sirah_edits WHERE date_iso = %s", (date,))
         row = cur.fetchone()
         cur.close()
-        conn.close()
         if not row:
             raise HTTPException(status_code=404, detail="Tidak ada data tersimpan untuk tanggal ini")
         return dict(row)
@@ -122,7 +143,6 @@ def load_sirah_tersimpan(date: str):
 # ENDPOINT AI SIRAH (GEMINI)
 # =============================================
 
-# 🌟 Daftar model fallback, urut dari yang paling diutamakan ke cadangan
 MODEL_FALLBACK_LIST = [
     "gemini-3.5-flash-lite",
     "gemini-3.5-flash",
@@ -131,7 +151,6 @@ MODEL_FALLBACK_LIST = [
 ]
 
 def call_gemini(model: str, api_key: str, payload: dict):
-    """Panggil satu model tertentu. Return (result_dict, error_or_None)."""
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     headers = {
         'Content-Type': 'application/json',
@@ -179,7 +198,6 @@ Berikan output HANYA dalam format JSON dengan struktur yang tepat seperti ini ta
 
             parsed_json = json.loads(text_response)
 
-            # Validasi field wajib (tambah url_sumber)
             required_fields = ["Judul", "kontent", "sumber", "url_sumber"]
             for field in required_fields:
                 if field not in parsed_json:
